@@ -65,7 +65,7 @@ func SearchTaskFunc(w http.ResponseWriter, r *http.Request) {
 		log.Println("error fetching search results")
 	}
 
-	categories := db.GetCategories(username)
+	categories, _ := db.GetCategories(username)
 	context.Categories = categories
 
 	// searchTemplate.Execute(w, context)

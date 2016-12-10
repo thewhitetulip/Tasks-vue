@@ -173,7 +173,7 @@ func EditTaskFunc(w http.ResponseWriter, r *http.Request) {
 	redirectURL := utils.GetRedirectUrl(r.Referer())
 	username := sessions.GetCurrentUserName(r)
 	task, err := db.GetTaskByID(username, id)
-	categories := db.GetCategories(username)
+	categories, _ := db.GetCategories(username)
 	task.Categories = categories
 	task.Referer = redirectURL
 

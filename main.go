@@ -45,10 +45,14 @@ func main() {
 	r.HandleFunc("/api/task/", views.UpdateTaskFuncAPI).Methods("POST")
 	r.HandleFunc("/api/task/", views.DeleteTaskFuncAPI).Methods("DELETE")
 	r.HandleFunc("/api/deleted/", views.GetDeletedTaskFuncAPI).Methods("GET")
+
+	r.HandleFunc("/api/completed/", views.GetCompletedTaskFuncAPI).Methods("GET")
+	r.HandleFunc("/api/categories/", views.GetCategoryFuncAPI).Methods("GET")
+
+	r.HandleFunc("/api/category/{category}", views.ShowCategoryFuncAPI).Methods("GET")
 	r.HandleFunc("/", views.Home).Methods("GET")
 
 	// r.HandleFunc("/api/get-token/", views.GetTokenHandler).Methods("POST")
-	// r.HandleFunc("/api/category/", views.GetCategoryFuncAPI).Methods("GET")
 	// r.HandleFunc("/api/category/", views.AddCategoryFuncAPI).Methods("POST")
 	// r.HandleFunc("/api/update-category/", views.UpdateCategoryFuncAPI).Methods("POST")
 	// r.HandleFunc("/api/delete-category/", views.DeleteCategoryFuncAPI).Methods("DELETE")

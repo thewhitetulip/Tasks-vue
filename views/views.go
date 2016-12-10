@@ -36,7 +36,7 @@ func ShowAllTasksFunc(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < len(context.Tasks); i++ {
 		context.Tasks[i].Content = string(md.Markdown([]byte(context.Tasks[i].Content)))
 	}
-	categories := db.GetCategories(username)
+	categories, _ := db.GetCategories(username)
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusInternalServerError)
 	} else {
@@ -61,7 +61,7 @@ func ShowTrashTaskFunc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	username := sessions.GetCurrentUserName(r)
-	categories := db.GetCategories(username)
+	categories, _ := db.GetCategories(username)
 	context, err := db.GetTasks(username, "deleted", "")
 	for i := 0; i < len(context.Tasks); i++ {
 		context.Tasks[i].Content = string(md.Markdown([]byte(context.Tasks[i].Content)))
@@ -86,7 +86,7 @@ func ShowCompleteTasksFunc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	username := sessions.GetCurrentUserName(r)
-	categories := db.GetCategories(username)
+	categories, _ := db.GetCategories(username)
 	context, err := db.GetTasks(username, "completed", "")
 	for i := 0; i < len(context.Tasks); i++ {
 		context.Tasks[i].Content = string(md.Markdown([]byte(context.Tasks[i].Content)))
@@ -112,7 +112,7 @@ func ShowCategoryFunc(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < len(context.Tasks); i++ {
 		context.Tasks[i].Content = string(md.Markdown([]byte(context.Tasks[i].Content)))
 	}
-	categories := db.GetCategories(username)
+	categories, _ := db.GetCategories(username)
 
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusInternalServerError)

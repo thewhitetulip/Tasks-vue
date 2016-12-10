@@ -119,11 +119,7 @@ func GetTasksFuncAPI(w http.ResponseWriter, r *http.Request) {
 			log.Println(message)
 			status = types.Status{StatusCode: http.StatusInternalServerError, Message: message}
 			w.WriteHeader(http.StatusInternalServerError)
-			err = json.NewEncoder(w).Encode(tasks)
 
-			if err != nil {
-				panic(err)
-			}
 			return
 		}
 
@@ -382,21 +378,38 @@ func DeleteTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//GetDeletedTaskFuncAPI will get the deleted tasks for the user
-func GetDeletedTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
+//GetCompletedTaskFuncAPI will get the deleted tasks for the user
+func GetCompletedTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		var err error
 		var message string
 		var tasks types.Tasks
 		var status types.Status
 
-		token := r.Header["Token"][0]
+		//token := r.Header["Token"][0]
 
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-		IsTokenValid, username := ValidateToken(token)
+		username := "suraj"
+		//IsTokenValid, username := ValidateToken(token)
 		//When the token is not valid show the default error JSON document
-		if !IsTokenValid {
+		//if !IsTokenValid {
+		//	status = types.Status{StatusCode: http.StatusInternalServerError, Message: message}
+		//	w.WriteHeader(http.StatusInternalServerError)
+		//	err = json.NewEncoder(w).Encode(status)
+		//
+		//			if err != nil {
+		//				panic(err)
+		//			}
+		//			return
+		//		}
+
+		log.Println("token is valid " + username + " is logged in")
+
+		//this is when we get a request for all the deleted tasks for that user
+		context, err := db.GetTasks(username, "completed", "")
+		if err != nil {
+			message = "GetTasksFuncAPI: api.go: Server error"
+			log.Println(message)
 			status = types.Status{StatusCode: http.StatusInternalServerError, Message: message}
 			w.WriteHeader(http.StatusInternalServerError)
 			err = json.NewEncoder(w).Encode(status)
@@ -407,6 +420,42 @@ func GetDeletedTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		tasks = context.Tasks
+		w.WriteHeader(http.StatusOK)
+		err = json.NewEncoder(w).Encode(tasks)
+
+		if err != nil {
+			panic(err)
+		}
+		return
+	}
+}
+
+//GetDeletedTaskFuncAPI will get the deleted tasks for the user
+func GetDeletedTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		var err error
+		var message string
+		var tasks types.Tasks
+		var status types.Status
+
+		//token := r.Header["Token"][0]
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		username := "suraj"
+		//IsTokenValid, username := ValidateToken(token)
+		//When the token is not valid show the default error JSON document
+		//if !IsTokenValid {
+		//	status = types.Status{StatusCode: http.StatusInternalServerError, Message: message}
+		//	w.WriteHeader(http.StatusInternalServerError)
+		//	err = json.NewEncoder(w).Encode(status)
+		//
+		//			if err != nil {
+		//				panic(err)
+		//			}
+		//			return
+		//		}
+
 		log.Println("token is valid " + username + " is logged in")
 
 		//this is when we get a request for all the deleted tasks for that user
@@ -416,7 +465,7 @@ func GetDeletedTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 			log.Println(message)
 			status = types.Status{StatusCode: http.StatusInternalServerError, Message: message}
 			w.WriteHeader(http.StatusInternalServerError)
-			err = json.NewEncoder(w).Encode(tasks)
+			err = json.NewEncoder(w).Encode(status)
 
 			if err != nil {
 				panic(err)
@@ -436,18 +485,18 @@ func GetDeletedTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 //GetCategoryFuncAPI will return the categories for the user
-//depends on the ID that we get, if we get all, then return all categories of the user
+//depends on the ID that we get, if we get all, then return all categories of the user as a JSON.
 func GetCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		var err error
-		var message string
-		var status types.Status
+	var err error
+	//var message string
+	//var status types.Status
 
-		token := r.Header["Token"][0]
+	//	token := r.Header["Token"][0]
 
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	username := "suraj"
 
-		IsTokenValid, username := ValidateToken(token)
+	/*	IsTokenValid, username := ValidateToken(token)
 		//When the token is not valid show the default error JSON document
 		if !IsTokenValid {
 			status = types.Status{StatusCode: http.StatusInternalServerError, Message: message}
@@ -458,18 +507,17 @@ func GetCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
 				panic(err)
 			}
 			return
-		}
+		} */
 
-		log.Println("token is valid " + username + " is logged in")
-		categories := db.GetCategories(username)
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	log.Println("token is valid " + username + " is logged in")
+	categories, _ := db.GetCategories(username)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusOK)
 
-		err = json.NewEncoder(w).Encode(categories)
-		if err != nil {
-			panic(err)
-		}
+	err = json.NewEncoder(w).Encode(categories)
+	if err != nil {
+		panic(err)
 	}
 
 }
@@ -662,4 +710,46 @@ func DeleteCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 	}
+}
+
+// ShowCategoryFuncAPI will return all the tasks of a particular category
+// we will be returning a status internal server error in case we do not find the
+// tasks of that category, the url it will handle is GET /api/categories/<value>; if value is nil it'll return a JSON error
+func ShowCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
+	var status types.Status
+	category := r.URL.Path[len("/api/category/"):]
+	username := "suraj"
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	if category == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		err = json.NewEncoder(w).Encode(types.Status{StatusCode: http.StatusInternalServerError, Message: "Invalid Request"})
+		return
+	}
+
+	log.Println("fetching tasks for " + category)
+
+	context, err := db.GetTasks(username, "", category)
+
+	if err != nil {
+		message = "ShowCategoryFuncAPI: api.go: Server error"
+		log.Println(message)
+		status = types.Status{StatusCode: http.StatusInternalServerError, Message: "error fetching categories"}
+		w.WriteHeader(http.StatusInternalServerError)
+		err = json.NewEncoder(w).Encode(status)
+		if err != nil {
+			panic(err)
+		}
+		return
+	}
+
+	//for i := 0; i < len(context.Tasks); i++ {
+	//	context.Tasks[i].Content = string(md.Markdown([]byte(context.Tasks[i].Content)))
+	//}
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(context.Tasks)
+	if err != nil {
+		panic(err)
+	}
+
 }

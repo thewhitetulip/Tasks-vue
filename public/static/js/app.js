@@ -50,7 +50,6 @@ var app = new Vue({
 	methods: {
 		// This will fetch task from the DB
 		fetchTasks: function () {
-			var events = [];
 			this.$http.get('/api/task/')
 				.then(response => response.json())
 				.then(result => {
@@ -61,7 +60,17 @@ var app = new Vue({
 				});
 		},
 
+		fetchCategories: function () {
+			this.$http.get('/api/categories/')
+				.then(response => response.json())
+				.then(result => {
+					Vue.set(this.$data, 'categories', result);		
+				})
+				.catch(err => {
+					console.log(err);
+				});
 
+		},
 		// this will add the task from the user input to our array
 		addTask: function (item) {
 			this.tasks.push(this.task);
@@ -152,25 +161,42 @@ var app = new Vue({
 		// either pending/complete/deleted or categories
 		taskByCategory: function (category) {
 			this.selectedCategoryName = category.categoryName;
-			this.selectedCategoryID =
-				this.selectedTaskTypeName = ''
+//			this.selectedCategoryID =
 			this.tasks = [];
+			this.selectedTaskTypeName = '';
+			this.$http.get('/api/category/'+this.selectedCategoryName)
+				.then(response => response.json())
+				.then(result => {
+					Vue.set(this.$data, 'tasks', result);	
+				})
+
 		},
 		// shows completed tasks
 		showCompletedTasks: function (type) {
-			this.tasks = this.completedTasks;
+			this.tasks = [];
+			this.$http.get('/api/completed/')
+				.then(response => response.json())
+				.then(result => {
+					Vue.set(this.$data, 'tasks', result);
+				})
 			this.selectedTaskTypeName = 'completed';
 			this.selectedCategoryName = '';
 		},
 		// shows pending tasks
 		showPendingTasks: function (type) {
-			this.tasks = this.pendingTasks;
+			this.fetchTasks();
 			this.selectedTaskTypeName = 'pending';
 			this.selectedCategoryName = ''
+
 		},
 		// shows the deleted tasks
 		showDeletedTasks: function (type) {
-			this.tasks = this.deletedTasks;
+			this.tasks = [];
+			this.$http.get('/api/deleted/')
+				.then(response => response.json())
+				.then(result => {
+					Vue.set(this.$data, 'tasks', result)
+				})
 			this.selectedTaskTypeName = 'deleted';
 			this.selectedCategoryName = ''
 		},

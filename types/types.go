@@ -26,8 +26,8 @@ type Tasks []Task
 type Comment struct {
 	ID       int    `json:"id"`
 	Content  string `json:"content"`
-	Created  string `json:"created_date"`
-	Username string `json:"username"`
+	Created  string `json:"created"`
+	Username string `json:"author"`
 }
 
 //Context is the struct passed to templates
@@ -37,7 +37,7 @@ type Context struct {
 	Search     string
 	Message    string
 	CSRFToken  string
-	Categories []CategoryCount
+	Categories []Category
 	Referer    string
 }
 
@@ -59,7 +59,6 @@ type Status struct {
 type Category struct {
 	ID        int    `json:"categoryId"`
 	Name      string `json:"categoryName"`
-	Created   string `json:"created_date"`
 	TaskCount int    `json:"taskCount"`
 }
 
