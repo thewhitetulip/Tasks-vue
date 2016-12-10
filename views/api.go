@@ -513,80 +513,79 @@ func GetCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
 
 //AddCategoryFuncAPI will add the category for the user
 func AddCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		var err error
-		var message string
-		var status types.Status
-		var statusCode int
-		var categoryErr bool
+	var err error
+	var message string
+	var status types.Status
+	var statusCode int
+	var categoryErr bool
 
-		token := r.Header["Token"][0]
+	// token := r.Header["Token"][0]
 
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	username := "suraj"
 
-		IsTokenValid, username := ValidateToken(token)
-		//When the token is not valid show the default error JSON document
-		if !IsTokenValid {
-			status = types.Status{StatusCode: http.StatusInternalServerError, Message: message}
-			w.WriteHeader(http.StatusInternalServerError)
-			err = json.NewEncoder(w).Encode(status)
+	//IsTokenValid, username := ValidateToken(token)
+	//When the token is not valid show the default error JSON document
+	//if !IsTokenValid {
+	//	status = types.Status{StatusCode: http.StatusInternalServerError, Message: message}
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	err = json.NewEncoder(w).Encode(status)
 
-			if err != nil {
-				panic(err)
-			}
-			return
-		}
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//	return
+	//}
 
-		log.Println("token is valid " + username + " is logged in")
-		r.ParseForm()
+	log.Println("token is valid " + username + " is logged in")
+	r.ParseForm()
 
-		category := r.Form.Get("category")
-		if strings.Trim(category, " ") != "" {
-			log.Println("adding category")
-			err := db.AddCategory(username, category)
-			if err != nil {
-				categoryErr = true
-			} else {
-				categoryErr = false
-			}
-		} else {
-			categoryErr = true
-		}
-
-		if categoryErr {
-			statusCode = http.StatusInternalServerError
-			message = "error adding category" + category
-		} else {
-			statusCode = http.StatusOK
-			message = "added category " + category
-		}
-
-		status = types.Status{StatusCode: statusCode, Message: message}
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-		w.WriteHeader(http.StatusOK)
-
-		err = json.NewEncoder(w).Encode(status)
+	category := r.Form.Get("categoryName")
+	if strings.Trim(category, " ") != "" {
+		log.Println("adding category")
+		err := db.AddCategory(username, category)
 		if err != nil {
-			panic(err)
+			categoryErr = true
+		} else {
+			categoryErr = false
 		}
+	} else {
+		categoryErr = true
+	}
+
+	if categoryErr {
+		statusCode = http.StatusInternalServerError
+		message = "error adding category" + category
+	} else {
+		statusCode = http.StatusOK
+		message = "added category " + category
+	}
+
+	status = types.Status{StatusCode: statusCode, Message: message}
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	w.WriteHeader(http.StatusOK)
+
+	err = json.NewEncoder(w).Encode(status)
+	if err != nil {
+		panic(err)
 	}
 }
 
 //UpdateCategoryFuncAPI will update the category for the user
 func UpdateCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		var statusCode int
-		var err error
-		var message string
-		var catErr bool
-		var status types.Status
+	var statusCode int
+	var err error
+	var message string
+	var catErr bool
+	var status types.Status
 
-		token := r.Header["Token"][0]
+	//token := r.Header["Token"][0]
+	username := "suraj"
 
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		IsTokenValid, username := ValidateToken(token)
+	/*	IsTokenValid, username := ValidateToken(token)
 		//When the token is not valid show the default error JSON document
 		if !IsTokenValid {
 			status = types.Status{StatusCode: http.StatusInternalServerError, Message: message}
@@ -598,106 +597,104 @@ func UpdateCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
+	*/
+	log.Println("token is valid " + username + " is logged in")
 
-		log.Println("token is valid " + username + " is logged in")
+	r.ParseForm()
 
-		r.ParseForm()
+	oldName := r.URL.Path[len("/api/category/"):]
+	oldName = strings.Trim(oldName, "/")
 
-		oldName := r.URL.Path[len("/api/update-category/"):]
-		oldName = strings.Trim(oldName, "/")
+	newName := r.Form.Get("newCategoryName")
 
-		newName := r.Form.Get("catname")
-
-		if strings.Trim(newName, " ") != "" {
-			err = db.UpdateCategoryByName(username, oldName, newName)
-			if err != nil {
-				catErr = true
-			}
-			catErr = false
-		} else {
+	if strings.Trim(newName, " ") != "" {
+		err = db.UpdateCategoryByName(username, oldName, newName)
+		if err != nil {
 			catErr = true
 		}
+		catErr = false
+	} else {
+		catErr = true
+	}
 
-		if catErr {
-			statusCode = http.StatusInternalServerError
-			message = "unable to update category from " + oldName + " to " + newName
-		} else {
-			statusCode = http.StatusOK
-			message = "updated category from " + oldName + " to " + newName
+	if catErr {
+		statusCode = http.StatusInternalServerError
+		message = "unable to update category from " + oldName + " to " + newName
+	} else {
+		statusCode = http.StatusOK
+		message = "updated category from " + oldName + " to " + newName
 
-		}
+	}
 
-		status = types.Status{StatusCode: statusCode, Message: message}
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	status = types.Status{StatusCode: statusCode, Message: message}
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusOK)
 
-		err = json.NewEncoder(w).Encode(status)
-		if err != nil {
-			panic(err)
-		}
+	err = json.NewEncoder(w).Encode(status)
+	if err != nil {
+		panic(err)
 	}
 }
 
 //DeleteCategoryFuncAPI will delete the category for the user
 func DeleteCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		categoryName := r.URL.Path[len("/delete-category/"):]
-		categoryName = strings.Trim(categoryName, "/")
-		var statusCode int
-		var err error
-		var message string
-		var catErr bool
+	categoryName := r.URL.Path[len("/api/category/"):]
+	categoryName = strings.Trim(categoryName, "/")
+	var statusCode int
+	var err error
+	var message string
+	var catErr bool
 
-		token := r.Header["Token"][0]
+	// token := r.Header["Token"][0]
+	username := "suraj"
 
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		IsTokenValid, username := ValidateToken(token)
-		//When the token is not valid show the default error JSON document
-		if !IsTokenValid {
-			status := types.Status{StatusCode: http.StatusInternalServerError, Message: message}
-			w.WriteHeader(http.StatusInternalServerError)
-			err = json.NewEncoder(w).Encode(status)
+	//	IsTokenValid, username := ValidateToken(token)
+	//When the token is not valid show the default error JSON document
+	//	if !IsTokenValid {
+	//		status := types.Status{StatusCode: http.StatusInternalServerError, Message: message}
+	//		w.WriteHeader(http.StatusInternalServerError)
+	//		err = json.NewEncoder(w).Encode(status)
 
-			if err != nil {
-				panic(err)
-			}
-			return
-		}
+	//		if err != nil {
+	//			panic(err)
+	//		}
+	//		return
+	//	}
 
-		log.Println("token is valid " + username + " is logged in")
+	log.Println("token is valid " + username + " is logged in")
 
-		categoryName = strings.Trim(categoryName, " ")
+	categoryName = strings.Trim(categoryName, " ")
 
-		if categoryName != "" {
-			catErr = true
-		}
+	if categoryName != "" {
+		catErr = true
+	}
+	err = db.DeleteCategoryByName(username, categoryName)
+	if err != nil {
+		catErr = true
+		log.Println(err)
+	} else {
+		catErr = false
+	}
 
-		err = db.DeleteCategoryByName(username, categoryName)
-		if err != nil {
-			catErr = true
-		} else {
-			catErr = false
-		}
+	if catErr {
+		statusCode = http.StatusBadRequest
+		message = "error deleting category" + categoryName
+	} else {
+		statusCode = http.StatusOK
+		message = "deleted category " + categoryName
+	}
 
-		if catErr {
-			statusCode = http.StatusBadRequest
-			message = "error deleting category" + categoryName
-		} else {
-			statusCode = http.StatusOK
-			message = "deleted category " + categoryName
-		}
+	status := types.Status{StatusCode: statusCode, Message: message}
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		status := types.Status{StatusCode: statusCode, Message: message}
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 
-		w.WriteHeader(http.StatusOK)
-
-		err = json.NewEncoder(w).Encode(status)
-		if err != nil {
-			panic(err)
-		}
+	err = json.NewEncoder(w).Encode(status)
+	if err != nil {
+		panic(err)
 	}
 }
 

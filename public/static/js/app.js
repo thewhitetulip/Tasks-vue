@@ -20,6 +20,7 @@ var app = new Vue({
     notification: '', // actual content of the notification
     isEditing: false, // this will decide if we are editing or adding a task, updated whenever we click the edit function, set to true
     taskIDEdit:-1, // stores the task id which is currently being updated;
+    categoryEdit: false,
     task: {
       id: '',
       title: '',
@@ -92,6 +93,9 @@ var app = new Vue({
       });
       $('#addNoteModal').modal('hide');
     },
+    toggleEditCategoryForm : function(){
+    	this.categoryEdit= ! this.categoryEdit;
+    },
     // this will add the task from the user input to our array
     updateTask: function (item) {
       this.$http.post('/api/task/', this.task, {
@@ -130,26 +134,41 @@ var app = new Vue({
     },
     // this will add a new category to our data store
     addCategory: function () {
-      this.category.taskCount = 0;
-      this.categories.push(this.category);
+      console.log(this.category);
+      this.$http.put("/api/category/", this.category,{
+      	emulateJSON: true
+      }).then(response => response.json()).then(result => {
+      		this.category.taskCount = 0;
+      		this.categories.push(this.category);
+      		this.category = {
+        		categoryID: '',
+      			categoryName: '',
+        		taskCount: ''
+      		};
+      }).catch (err => {
+      		console.log(err);
+      });
       console.log(this.category.categoryName);
-      this.category = {
-        categoryID: '',
-        categoryName: '',
-        taskCount: ''
-      };
       this.notificationVisible = true;
       this.notification = 'Category Added';
     },
     deleteCategory: function (name) {
-      console.log('deleting ' + name);
-      var index = 0;
-      for (category in this.categories) {
-        if (this.categories[category].categoryName == name) {
-          index = this.categories.indexOf(category);
-        }
-      }
-      this.categories.splice(index, 1);
+     this.$http.delete('/api/category/'+name).then(response => response.json())
+     	.then(result => {	
+		console.log('deleting ' + name);
+		var index = 0;
+		for (category in this.categories) {
+		   if (this.categories[category].categoryName == name) {
+			index = this.categories.indexOf(category);
+        	   }
+      		}
+	      this.categories.splice(index, 1);
+	      this.fetchTasks();
+	      this.navigation='Pending';
+	      this.selectedTaskTypeName = 'pending'
+	}).catch(err => {
+		console.log(err);
+	});
     },
     // this will add a new note to the existing list of comments
     addComment: function (comment, taskIndex) {
@@ -228,11 +247,12 @@ var app = new Vue({
       this.selectedCategoryName = category;
       this.navigation = this.selectedCategoryName;
       //			this.selectedCategoryID =
-      this.tasks = [
-      ];
+      this.tasks = [];
       this.selectedTaskTypeName = '';
       this.$http.get('/api/category/' + this.selectedCategoryName).then(response => response.json()).then(result => {
+      if (result!= null) {
         Vue.set(this.$data, 'tasks', result);
+      }
       })
     },
     // shows completed tasks
@@ -271,13 +291,22 @@ var app = new Vue({
     updateCategory: function (oldName, newName) {
       // update the category name in the db
       // this logic is temporary and will be removed later
-      var id = '';
-      for (category in this.categories) {
-        if (this.categories[category].categoryName == oldName) {
-          this.categories[category].categoryName = newName;
-          console.log('Updated');
+      category = {newCategoryName: this.newCategoryName}
+      this.$http.post('/api/category/' + oldName, category, {
+      	emulateJSON:true
+      }).then(response => response.json()).then(result => {
+
+        for (category in this.categories) {
+          if (this.categories[category].categoryName == oldName) {
+            this.categories[category].categoryName = newName;
+            console.log('Updated');
+	    this.navigation = newName;
+	    this.toggleEditCategoryForm();
+          }
         }
-      }
+
+      });
+
     }
   }
 })

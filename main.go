@@ -50,15 +50,17 @@ func main() {
 	r.HandleFunc("/api/categories/", views.GetCategoryFuncAPI).Methods("GET")
 
 	r.HandleFunc("/api/category/{category}", views.ShowCategoryFuncAPI).Methods("GET")
+	r.HandleFunc("/api/category/{category}", views.DeleteCategoryFuncAPI).Methods("DELETE")
 	r.HandleFunc("/api/trash-task/{id}", views.TrashTaskFuncAPI).Methods("GET")
 	r.HandleFunc("/api/complete-task/{id}", views.CompleteTaskFuncAPI).Methods("GET")
 	r.HandleFunc("/api/incomplete-task/{id}", views.RestoreFromCompleteFuncAPI).Methods("GET")
 	r.HandleFunc("/api/restore-task/{id}", views.RestoreTaskFuncAPI).Methods("GET")
 	r.HandleFunc("/", views.Home).Methods("GET")
 
+	r.HandleFunc("/api/comment/", views.AddCommentFunc).Methods("PUT")
 	// r.HandleFunc("/api/get-token/", views.GetTokenHandler).Methods("POST")
-	// r.HandleFunc("/api/category/", views.AddCategoryFuncAPI).Methods("POST")
-	// r.HandleFunc("/api/update-category/", views.UpdateCategoryFuncAPI).Methods("POST")
+	r.HandleFunc("/api/category/", views.AddCategoryFuncAPI).Methods("PUT")
+	r.HandleFunc("/api/category/{category}", views.UpdateCategoryFuncAPI).Methods("POST")
 	// r.HandleFunc("/api/delete-category/", views.DeleteCategoryFuncAPI).Methods("DELETE")
 
 	//Login logout
@@ -67,7 +69,6 @@ func main() {
 	// http.HandleFunc("/signup/", views.SignUpFunc)
 
 	// http.HandleFunc("/add-category/", views.RequiresLogin(views.AddCategoryFunc))
-	// http.HandleFunc("/add-comment/", views.RequiresLogin(views.AddCommentFunc))
 	// http.HandleFunc("/add/", views.RequiresLogin(views.AddTaskFunc))
 
 	// //these handlers are used to delete

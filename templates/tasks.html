@@ -44,17 +44,19 @@
                     <button  data-original-title="Search" data-placement="bottom" data-toggle="tooltip" title=""  id="searchFormBtn" class="btn btn-action glyphicon glyphicon-search"  type="button"></button>
                     <template v-if="selectedCategoryName">
                    <a v-on:click="deleteCategory(selectedCategoryName)"> <button  data-original-title="Delete Category" data-placement="bottom" data-toggle="tooltip" title="" class="btn btn-action glyphicon glyphicon-trash"  type="button"></button></a>
-                   <button  data-original-title="Edit Category" data-placement="bottom" data-toggle="tooltip" id="editCatFrmBtn" title="" class="btn btn-action glyphicon glyphicon-pencil"  type="button"></button>
+                   <button  data-original-title="Edit Category" data-placement="bottom" data-toggle="tooltip" id="editCatFrmBtn" title="" class="btn btn-action glyphicon glyphicon-pencil"  type="button" @click="toggleEditCategoryForm()"></button>
                   </template>
                    <a href="/logout"> <button  data-original-title="Logout" data-placement="bottom" data-toggle="tooltip" title="Logout" class="btn btn-action glyphicon glyphicon-off"  type="button"></button></a>
                 </span>
                 <p class="navbar-brand">
                     ${navigation}
                 </p>
-                <form method="POST" class="hidden" id="EditForm" v-on:submit.prevent="onSubmit" >
-                    <input type="text" name="catname" placeholder="new category name" v-model="newCategoryName">
-                    <button type="submit" v-on:click="updateCategory(selectedCategoryName, newCategoryName)" class="btn btn-default"> Submit </button>
-                </form>
+		<template v-if="categoryEdit">
+                    <form method="POST" id="EditForm" v-on:submit.prevent="onSubmit" >
+                        <input type="text" name="catname" placeholder="new category name" v-model="newCategoryName">
+                        <button type="submit" v-on:click="updateCategory(selectedCategoryName, newCategoryName)" class="btn btn-default"> Submit </button>
+                    </form>
+	 	</template>
                 <form action="/search/" method="POST" class="hidden" id="SearchForm">
                     <input type="text" name="query" placeholder="Search">
                     <input type="submit" value="Submit" class="btn btn-default" />
@@ -86,7 +88,7 @@
                                 <h5> Categories</h5>
                                 <!--<button title="New category" id="toggleCategoryForm" data-placement="left" data-toggle="tooltip" class="btn glyphicon glyphicon-plus" style="font-size:small; margin-left:120px;"></button>-->
                                 <span id="categoryForm">
-                                 <form  method="POST" v-on:submit.prevent="onSubmit">
+                                 <form  method="POST" v-on:submit.prevent="OnSubmit">
                                  <span> 
 				         <input type="text" name="category" width="50px" v-model="category.categoryName">
 				         <button v-on:click="addCategory" class="btn btn-primary">Submit</button>
