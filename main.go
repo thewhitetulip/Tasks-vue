@@ -50,6 +50,10 @@ func main() {
 	r.HandleFunc("/api/categories/", views.GetCategoryFuncAPI).Methods("GET")
 
 	r.HandleFunc("/api/category/{category}", views.ShowCategoryFuncAPI).Methods("GET")
+	r.HandleFunc("/api/trash-task/{id}", views.TrashTaskFuncAPI).Methods("GET")
+	r.HandleFunc("/api/complete-task/{id}", views.CompleteTaskFuncAPI).Methods("GET")
+	r.HandleFunc("/api/incomplete-task/{id}", views.RestoreFromCompleteFuncAPI).Methods("GET")
+	r.HandleFunc("/api/restore-task/{id}", views.RestoreTaskFuncAPI).Methods("GET")
 	r.HandleFunc("/", views.Home).Methods("GET")
 
 	// r.HandleFunc("/api/get-token/", views.GetTokenHandler).Methods("POST")
@@ -76,8 +80,6 @@ func main() {
 	// http.HandleFunc("/update/", views.RequiresLogin(views.UpdateTaskFunc))
 
 	// //these handlers are used for restoring tasks
-	// http.HandleFunc("/incomplete/", views.RequiresLogin(views.RestoreFromCompleteFunc))
-	// http.HandleFunc("/restore/", views.RequiresLogin(views.RestoreTaskFunc))
 
 	// //these handlers fetch set of tasks
 	// http.HandleFunc("/", views.RequiresLogin(views.ShowAllTasksFunc))
@@ -86,7 +88,6 @@ func main() {
 	// http.HandleFunc("/completed/", views.RequiresLogin(views.ShowCompleteTasksFunc))
 
 	// //these handlers perform action like delete, mark as complete etc
-	// http.HandleFunc("/complete/", views.RequiresLogin(views.CompleteTaskFunc))
 	// http.HandleFunc("/files/", views.RequiresLogin(views.UploadedFileHandler))
 	// http.HandleFunc("/trash/", views.RequiresLogin(views.TrashTaskFunc))
 	// http.HandleFunc("/edit/", views.RequiresLogin(views.EditTaskFunc))

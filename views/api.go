@@ -164,164 +164,153 @@ func GetTasksFuncAPI(w http.ResponseWriter, r *http.Request) {
 
 //AddTaskFuncAPI will add the tasks for the user
 func AddTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		token := r.Header["Token"][0]
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	// token := r.Header["Token"][0]
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		IsTokenValid, username := ValidateToken(token)
-		//When the token is not valid show the default error JSON document
-		if !IsTokenValid {
-			status := types.Status{StatusCode: http.StatusInternalServerError, Message: message}
-			w.WriteHeader(http.StatusInternalServerError)
-			err = json.NewEncoder(w).Encode(status)
+	username := "suraj"
+	// IsTokenValid, username := ValidateToken(token)
+	//When the token is not valid show the default error JSON document
+	// if !IsTokenValid {
+	// 	status := types.Status{StatusCode: http.StatusInternalServerError, Message: message}
+	// 	w.WriteHeader(http.StatusInternalServerError)
+	// 	err = json.NewEncoder(w).Encode(status)
+	//
+	// 		if err != nil {
+	// 			panic(err)
+	// 		}
+	// 		return
+	// 	}
 
-			if err != nil {
-				panic(err)
-			}
-			return
-		}
+	log.Println("token is valid " + username + " is logged in")
 
-		log.Println("token is valid " + username + " is logged in")
+	r.ParseForm()
+	category := r.FormValue("category")
+	title := template.HTMLEscapeString(r.Form.Get("title"))
+	content := template.HTMLEscapeString(r.Form.Get("content"))
+	taskPriority, priorityErr := strconv.Atoi(r.FormValue("priority"))
 
-		r.ParseForm()
-		category := r.FormValue("category")
-		title := template.HTMLEscapeString(r.Form.Get("title"))
-		content := template.HTMLEscapeString(r.Form.Get("content"))
-		taskPriority, priorityErr := strconv.Atoi(r.FormValue("priority"))
-
-		if priorityErr != nil {
-			log.Print(priorityErr)
-			message = "Bad task priority"
-		}
-		priorityList := []int{1, 2, 3}
-		found := false
-		for _, priority := range priorityList {
-			if taskPriority == priority {
-				found = true
-			}
-		}
-		//If someone gives us incorrect priority number, we give the priority
-		//to that task as 1 i.e. Low
-		if !found {
-			taskPriority = 1
-		}
-		var hidden int
-		hideTimeline := r.FormValue("hide")
-		if hideTimeline != "" {
-			hidden = 1
-		} else {
-			hidden = 0
-		}
-		var taskErr bool
-
-		if title != "" && content != "" {
-			taskTruth := db.AddTask(title, content, category, taskPriority, username, hidden)
-			if taskTruth != nil {
-				taskErr = true
-			}
-		}
-
-		var statusCode int
-		var message string
-
-		if !taskErr {
-			statusCode = http.StatusInternalServerError
-			message = "Error adding task to db"
-		} else {
-			statusCode = http.StatusOK
-			message = "Task added to db"
-		}
-		status := types.Status{StatusCode: statusCode, Message: message}
-		json.NewEncoder(w).Encode(status)
-	} else {
-		var statusCode int
-		var message string
-
-		statusCode = http.StatusBadRequest
-		message = "Invalid request"
-		status := types.Status{StatusCode: statusCode, Message: message}
-		json.NewEncoder(w).Encode(status)
-
+	if priorityErr != nil {
+		log.Print(priorityErr)
+		message = "Bad task priority"
 	}
+	priorityList := []int{1, 2, 3}
+	found := false
+	for _, priority := range priorityList {
+		if taskPriority == priority {
+			found = true
+		}
+	}
+	//If someone gives us incorrect priority number, we give the priority
+	//to that task as 1 i.e. Low
+	if !found {
+		taskPriority = 1
+	}
+	var hidden int
+	hideTimeline := r.FormValue("hide")
+	if hideTimeline != "" {
+		hidden = 1
+	} else {
+		hidden = 0
+	}
+	var taskErr bool
+
+	if title != "" && content != "" {
+		taskTruth := db.AddTask(title, content, category, taskPriority, username, hidden)
+		if taskTruth != nil {
+			taskErr = true
+		}
+	}
+
+	var statusCode int
+	var message string
+
+	if !taskErr {
+		statusCode = http.StatusInternalServerError
+		message = "Error adding task to db"
+	} else {
+		statusCode = http.StatusOK
+		message = "Task added to db"
+	}
+	status := types.Status{StatusCode: statusCode, Message: message}
+	json.NewEncoder(w).Encode(status)
+	log.Println("added task to db")
 }
 
 //UpdateTaskFuncAPI will add the tasks for the user
 func UpdateTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		var taskErr bool
-		token := r.Header["Token"][0]
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	var taskErr bool
+	// token := r.Header["Token"][0]
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	username := "suraj"
+	// IsTokenValid, username := ValidateToken(token)
+	// When the token is not valid show the default error JSON document
+	// if !IsTokenValid {
+	// status := types.Status{StatusCode: http.StatusInternalServerError, Message: message}
+	// w.WriteHeader(http.StatusInternalServerError)
+	// err = json.NewEncoder(w).Encode(status)
+	//
+	// if err != nil {
+	// panic(err)
+	// }
+	// return
+	// }
 
-		IsTokenValid, username := ValidateToken(token)
-		//When the token is not valid show the default error JSON document
-		if !IsTokenValid {
-			status := types.Status{StatusCode: http.StatusInternalServerError, Message: message}
-			w.WriteHeader(http.StatusInternalServerError)
-			err = json.NewEncoder(w).Encode(status)
+	log.Println("update func token is valid " + username + " is logged in")
 
-			if err != nil {
-				panic(err)
-			}
-			return
-		}
+	r.ParseForm()
+	strID := r.Form.Get("id")
+	id, err := strconv.Atoi(strID)
+	if err != nil {
+		log.Println(err)
+		taskErr = true
+	}
+	category := r.Form.Get("category")
+	title := r.Form.Get("title")
+	content := r.Form.Get("content")
+	priority, err := strconv.Atoi(r.Form.Get("priority"))
 
-		log.Println("token is valid " + username + " is logged in")
+	if err != nil {
+		log.Println(err)
+		priority = 1
+	}
 
-		r.ParseForm()
-		strID := r.Form.Get("id")
-		id, err := strconv.Atoi(strID)
+	var hidden int
+	hideTimeline := r.FormValue("hide")
+	if hideTimeline != "" {
+		hidden = 1
+	} else {
+		hidden = 0
+	}
+
+	if strID != "" && title != "" && content != "" {
+		err = db.UpdateTask(id, title, content, category, priority, username, hidden)
 		if err != nil {
-			log.Println(err)
 			taskErr = true
 		}
-		category := r.Form.Get("category")
-		title := r.Form.Get("title")
-		content := r.Form.Get("content")
-		priority, err := strconv.Atoi(r.Form.Get("priority"))
+		taskErr = false
+	} else {
+		taskErr = true
+	}
 
-		if err != nil {
-			log.Println(err)
-			priority = 1
-		}
+	var statusCode int
+	var message string
 
-		var hidden int
-		hideTimeline := r.FormValue("hide")
-		if hideTimeline != "" {
-			hidden = 1
-		} else {
-			hidden = 0
-		}
+	if taskErr {
+		statusCode = http.StatusBadRequest
+		message = "unable to update task id "
+	} else {
+		statusCode = http.StatusOK
+		message = "updated task id "
+	}
 
-		if strID != "" && title != "" && content != "" {
-			err = db.UpdateTask(id, title, content, category, priority, username, hidden)
-			if err != nil {
-				taskErr = true
-			}
-			taskErr = false
-		} else {
-			taskErr = true
-		}
+	status := types.Status{StatusCode: statusCode, Message: message}
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		var statusCode int
-		var message string
+	w.WriteHeader(http.StatusOK)
 
-		if taskErr {
-			statusCode = http.StatusBadRequest
-			message = "unable to update task id "
-		} else {
-			statusCode = http.StatusOK
-			message = "updated task id "
-		}
-
-		status := types.Status{StatusCode: statusCode, Message: message}
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-		w.WriteHeader(http.StatusOK)
-
-		err = json.NewEncoder(w).Encode(status)
-		if err != nil {
-			panic(err)
-		}
+	err = json.NewEncoder(w).Encode(status)
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -752,4 +741,138 @@ func ShowCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
+}
+
+//CompleteTaskFuncAPI will delete a task which is passed as an ID
+func CompleteTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
+	var status types.Status
+	id, err := strconv.Atoi(r.URL.Path[len("/api/complete-task/"):])
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if err != nil {
+		log.Println("TrashTaskFunc", err)
+		message = "Incorrect command"
+		status = types.Status{StatusCode: http.StatusBadRequest, Message: "Invalid Task"}
+		w.WriteHeader(http.StatusBadRequest)
+		err = json.NewEncoder(w).Encode(status)
+		if err != nil {
+			panic(err)
+		}
+		return
+
+	}
+	username := "suraj"
+	err = db.CompleteTask(username, id)
+	if err != nil {
+		message = "Error completing task"
+	} else {
+		message = "Task completed"
+	}
+	w.WriteHeader(http.StatusOK)
+	status = types.Status{http.StatusOK, message}
+	err = json.NewEncoder(w).Encode(status)
+
+	if err != nil {
+		panic(err)
+	}
+	return
+
+}
+func RestoreTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
+	var status types.Status
+	id, err := strconv.Atoi(r.URL.Path[len("/api/restore-task/"):])
+	log.Println("restore" + string(id))
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if err != nil {
+		log.Println("TrashTaskFunc", err)
+		message = "Incorrect command"
+		status = types.Status{StatusCode: http.StatusBadRequest, Message: "Invalid Task"}
+		w.WriteHeader(http.StatusBadRequest)
+		err = json.NewEncoder(w).Encode(status)
+		if err != nil {
+			panic(err)
+		}
+		return
+
+	}
+	username := "suraj"
+	err = db.RestoreTask(username, id)
+	if err != nil {
+		message = "Error trashing task"
+	} else {
+		message = "Task trashed"
+	}
+	w.WriteHeader(http.StatusOK)
+	status = types.Status{http.StatusOK, "task trashed"}
+	err = json.NewEncoder(w).Encode(status)
+	if err != nil {
+		panic(err)
+	}
+	return
+
+}
+
+// TrashTaskFuncAPI will delete a task which is passed as an ID
+func TrashTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
+	var status types.Status
+	id, err := strconv.Atoi(r.URL.Path[len("/api/trash-task/"):])
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if err != nil {
+		log.Println("TrashTaskFunc", err)
+		message = "Incorrect command"
+		status = types.Status{StatusCode: http.StatusBadRequest, Message: "Invalid Task"}
+		w.WriteHeader(http.StatusBadRequest)
+		err = json.NewEncoder(w).Encode(status)
+		if err != nil {
+			panic(err)
+		}
+		return
+
+	}
+	username := "suraj"
+	err = db.TrashTask(username, id)
+	if err != nil {
+		message = "Error trashing task"
+	} else {
+		message = "Task trashed"
+	}
+	w.WriteHeader(http.StatusOK)
+	status = types.Status{http.StatusOK, "task trashed"}
+	err = json.NewEncoder(w).Encode(status)
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+// RestoreFromCompleteFuncAPI will delete a task which is passed as an ID
+func RestoreFromCompleteFuncAPI(w http.ResponseWriter, r *http.Request) {
+	var status types.Status
+	id, err := strconv.Atoi(r.URL.Path[len("/api/incomplete-task/"):])
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if err != nil {
+		log.Println("TrashTaskFunc", err)
+		message = "Incorrect command"
+		status = types.Status{StatusCode: http.StatusBadRequest, Message: "Invalid Task"}
+		w.WriteHeader(http.StatusBadRequest)
+		err = json.NewEncoder(w).Encode(status)
+		if err != nil {
+			panic(err)
+		}
+		return
+
+	}
+	username := "suraj"
+	err = db.RestoreTaskFromComplete(username, id)
+	if err != nil {
+		message = "Error trashing task"
+	} else {
+		message = "Task trashed"
+	}
+	w.WriteHeader(http.StatusOK)
+	status = types.Status{http.StatusOK, "task trashed"}
+	err = json.NewEncoder(w).Encode(status)
+	if err != nil {
+		panic(err)
+	}
+	return
 }
