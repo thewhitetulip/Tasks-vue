@@ -274,7 +274,7 @@ var app = new Vue({
     },
     // will trash a task, won't delete from db
     TrashTask: function (index, taskID) {
-      this.$http.get('/api/trash-task/' + taskID).then(response => response.json()).then(result => {
+      this.$http.delete('/api/task/' + taskID).then(response => response.json()).then(result => {
         this.tasks.splice(index, 1);
       })
       this.notificationVisible = true;
