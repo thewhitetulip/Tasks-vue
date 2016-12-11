@@ -16,7 +16,7 @@ type Task struct {
 	Comments     []Comment `json:"comments,omitempty"`
 	IsOverdue    bool      `json:"isoverdue, omitempty"`
 	IsHidden     int       `json:"ishidden, omitempty`
-	CompletedMsg string    `json:"ishidden, omitempty"`
+	CompletedMsg string    `json:"completedmsg, omitempty"`
 	ShowComment  bool      `json:"showComment"`
 }
 

@@ -206,8 +206,9 @@ func AddTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 		taskPriority = 1
 	}
 	var hidden int
-	hideTimeline := r.FormValue("hide")
-	if hideTimeline != "" {
+	hideTimeline := r.FormValue("ishidden")
+	log.Println(hideTimeline)
+	if hideTimeline == "true" {
 		hidden = 1
 	} else {
 		hidden = 0
@@ -867,6 +868,88 @@ func RestoreFromCompleteFuncAPI(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	status = types.Status{http.StatusOK, "task trashed"}
+	err = json.NewEncoder(w).Encode(status)
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+//AddCommentFuncAPI will be used
+func AddCommentFuncAPI(w http.ResponseWriter, r *http.Request) {
+	var status types.Status
+	var message string
+
+	r.ParseForm()
+	text := r.Form.Get("content")
+	id := r.Form.Get("taskID")
+
+	idInt, err := strconv.Atoi(id)
+	log.Println(r.Form)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	if err != nil {
+		if text == "" {
+			message = "blank comment"
+		} else {
+			message = "Error adding comment"
+
+		}
+		log.Println(err)
+		status = types.Status{http.StatusBadRequest, message}
+		w.WriteHeader(http.StatusBadRequest)
+		err = json.NewEncoder(w).Encode(status)
+		return
+	}
+	//username := sessions.GetCurrentUserName(r)
+	username := "suraj"
+	err = db.AddComments(username, idInt, text)
+	htstatus := http.StatusOK
+	if err != nil {
+		log.Println("unable to insert into db")
+		message = "Comment not added"
+		htstatus = http.StatusInternalServerError
+	} else {
+		message = "Comment added"
+	}
+	status = types.Status{htstatus, message}
+	w.WriteHeader(htstatus)
+	err = json.NewEncoder(w).Encode(status)
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+//DeleteCommentFuncAPI will delete any category
+func DeleteCommentFuncAPI(w http.ResponseWriter, r *http.Request) {
+	var status types.Status
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	id := r.URL.Path[len("/api/comment/"):]
+	commentID, err := strconv.Atoi(id)
+	if err != nil {
+		status = types.Status{http.StatusBadRequest, "Invalid comment"}
+		err = json.NewEncoder(w).Encode(status)
+		if err != nil {
+			panic(err)
+		}
+		return
+	}
+	//username := sessions.GetCurrentUserName(r)
+	username := "suraj"
+
+	err = db.DeleteCommentByID(username, commentID)
+	htStatus := http.StatusOK
+	if err != nil {
+		message = "comment not deleted"
+		htStatus = http.StatusInternalServerError
+	} else {
+		message = "comment deleted"
+	}
+	status = types.Status{htStatus, message}
+	w.WriteHeader(htStatus)
 	err = json.NewEncoder(w).Encode(status)
 	if err != nil {
 		panic(err)

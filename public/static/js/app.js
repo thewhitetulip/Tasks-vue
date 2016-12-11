@@ -29,11 +29,15 @@ var app = new Vue({
       priority: '',
       comments: [
       ],
+      ishidden:'',
+      completedmsg:'',
       showComment: false
     }, // variable in which task value is stored
     selectedCategoryName: '', // if the user has selected the category in the navigation drawer, this var has value
     selectedTaskTypeName: 'pending', // by default we show pending tasks
     comment: {
+      id:'',
+      taskID:'',
       content: '',
       author: '',
       created: ''
@@ -77,8 +81,17 @@ var app = new Vue({
       this.$http.put('/api/task/', this.task, {
         emulateJSON: true
       }).then(response => response).then(result => {
-        this.tasks.push(this.task);
-        console.log('Event added!');
+       if (this.task.ishidden == false) {
+           this.tasks.push(this.task);
+       }
+       categoryIndex = 0;
+       for (c in this.categories) {
+       	  if (this.categories[c].categoryName== this.task.category) {
+	        this.categories[c].taskCount +=1;
+	      break;
+	  }
+       }
+
         this.task = {
           title: '',
           content: '',
@@ -172,29 +185,48 @@ var app = new Vue({
     },
     // this will add a new note to the existing list of comments
     addComment: function (comment, taskIndex) {
-      comment.author = this.user;
-      comment.created = new Date();
-      if (comment.content != '') {
-        this.tasks[taskIndex].comments.push(comment);
-        this.comment = {
-          content: '',
-          created: ''
+     this.comment.taskID = this.tasks[taskIndex].id;
+     console.log(this.tasks[taskIndex].title, this.tasks[taskIndex].id);
+     this.$http.put('/api/comment/', this.comment, {
+     	emulateJSON: true
+     }).then(response => response.json()).then(result => {
+        this.comment.author = this.user;
+        this.comment.created = new Date();
+        if (this.comment.content != '') {
+	  if (this.tasks[taskIndex].comments == null) {
+	  	this.tasks[taskIndex].comments = [];
+	  }
+          this.tasks[taskIndex].comments.push(comment);
+          this.comment = {
+            content : '',
+            created: '',
+	    taskID:'',
+	    author:''
         }
-        this.notification = 'added comment';
-      } else {
-        this.notification = 'can\'t add comment';
-      }
+          this.notification = 'added comment';
+        } else {
+          this.notification = 'can\'t add comment';
+        }
       this.notificationVisible = true;
+     }).catch(err => {
+     	console.log(err);
+     });
     },
     // will hide the visibility of the notification
     hide: function () {
       this.notificationVisible = false;
     },
     // will delete a comment
-    deleteComment: function (taskIndex, commentIndex) {
-      this.tasks[taskIndex].comments.splice(commentIndex, 1);
-      this.notificationVisible = true;
-      this.notification = 'Comment deleted';
+    deleteComment: function (taskIndex, commentIndex, taskID, commentID) {
+     this.$http.delete('/api/comment/'+commentID).then(response => response.json())
+     	.then(result => {
+              this.tasks[taskIndex].comments.splice(commentIndex, 1);
+              this.notificationVisible = true;
+              this.notification = 'Comment deleted';	
+	}).catch(err => {
+	      console.log(err);
+	});
+
     },
     // will edit a task
     edit: function (index) {

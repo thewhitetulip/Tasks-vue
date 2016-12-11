@@ -57,7 +57,8 @@ func main() {
 	r.HandleFunc("/api/restore-task/{id}", views.RestoreTaskFuncAPI).Methods("GET")
 	r.HandleFunc("/", views.Home).Methods("GET")
 
-	r.HandleFunc("/api/comment/", views.AddCommentFunc).Methods("PUT")
+	r.HandleFunc("/api/comment/", views.AddCommentFuncAPI).Methods("PUT")
+	r.HandleFunc("/api/comment/{id}", views.DeleteCommentFuncAPI).Methods("DELETE")
 	// r.HandleFunc("/api/get-token/", views.GetTokenHandler).Methods("POST")
 	r.HandleFunc("/api/category/", views.AddCategoryFuncAPI).Methods("PUT")
 	r.HandleFunc("/api/category/{category}", views.UpdateCategoryFuncAPI).Methods("POST")
