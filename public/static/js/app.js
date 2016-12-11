@@ -14,6 +14,7 @@ var app = new Vue({
   ],
   data: {
     navigation: 'Pending', //this is what we will display in the title tag of the main page, Completed/Deleted/Pending
+    isLoggedIn: false,
     user: 'suraj',
     newCategoryName: '', // this is the new category name to be used in the update category flow
     notificationVisible: false, // This toggles the visibility of the notification
@@ -21,6 +22,10 @@ var app = new Vue({
     isEditing: false, // this will decide if we are editing or adding a task, updated whenever we click the edit function, set to true
     taskIDEdit:-1, // stores the task id which is currently being updated;
     categoryEdit: false,
+    userLogin : {
+    	username: '',
+	password:''
+    },
     task: {
       id: '',
       title: '',
@@ -53,10 +58,36 @@ var app = new Vue({
     ], // stores all the tasks
   },
   mounted: function () {
-    this.fetchCategories();
-    this.fetchTasks();
+  	this.checklogin();
   },
   methods: {
+    checklogin: function(){
+        this.$http.get('/api/login/').then(response => response.json()).then(result => {
+		this.isLoggedIn = result.loggedin;
+		this.fetchCategories();
+		this.fetchTasks();
+	}).catch(err => {
+		console.log(err);
+	});
+    },
+    login: function () {
+    	this.$http.post('/api/login/', this.userLogin, { emulateJSON : true }).then(response => response.json()).then(result => {
+    		this.isLoggedIn = true;
+		this.fetchCategories();
+		this.fetchTasks();
+		this.userLogin = {username:'', password:''}
+	}).catch(err => {
+		console.log(err);
+	});
+    },
+    logout: function () {
+    	this.$http.get('/api/logout/').then(response => response.json())
+		.then(result => {
+			this.isLoggedIn = false;
+		}).catch(err => {
+			console.log(err);
+		});
+    },
     // This will fetch task from the DB
     fetchTasks: function () {
       this.tasks = [
@@ -67,6 +98,7 @@ var app = new Vue({
         }
       }).catch (err => {
         console.log(err);
+	isLoggedIn = false;
       });
     },
     fetchCategories: function () {

@@ -7,80 +7,15 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/thewhitetulip/Tasks-vue/db"
+	"github.com/thewhitetulip/Tasks-vue/sessions"
 	"github.com/thewhitetulip/Tasks-vue/types"
 )
 
-type MyCustomClaims struct {
-	Username string `json:"username"`
-	jwt.StandardClaims
-}
-
-var mySigningKey = []byte("secret")
-
-//GetTokenHandler will get a token for the username and password
-func GetTokenHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.Write([]byte("Method not allowed"))
-		return
-	}
-
-	r.ParseForm()
-	username := r.Form.Get("username")
-	password := r.Form.Get("password")
-	log.Println(username, " ", password)
-	if username == "" || password == "" {
-		w.Write([]byte("Invalid Username or password"))
-		return
-	}
-	if db.ValidUser(username, password) {
-		/* Set token claims */
-
-		// Create the Claims
-		claims := MyCustomClaims{
-			username,
-			jwt.StandardClaims{
-				ExpiresAt: time.Now().Add(time.Hour * 5).Unix(),
-			},
-		}
-
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-		/* Sign the token with our secret */
-		tokenString, err := token.SignedString(mySigningKey)
-		if err != nil {
-			log.Println("Something went wrong with signing token")
-			w.Write([]byte("Authentication failed"))
-			return
-		}
-
-		/* Finally, write the token to the browser window */
-		w.Write([]byte(tokenString))
-	} else {
-		w.Write([]byte("Authentication failed"))
-	}
-}
-
-//ValidateToken will validate the token
-func ValidateToken(myToken string) (bool, string) {
-	token, err := jwt.ParseWithClaims(myToken, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(mySigningKey), nil
-	})
-
-	if err != nil {
-		return false, ""
-	}
-
-	claims := token.Claims.(*MyCustomClaims)
-	return token.Valid, claims.Username
-}
-
 //GetTasksFuncAPI fetches tasks depending on the request, the authorization will be taken care by our middleare
 //in this function we will return all the tasks to the user or tasks per category
-//GET /api/get-tasks/
+//GET /api/tasks/
 func GetTasksFuncAPI(w http.ResponseWriter, r *http.Request) {
 	var strTaskID string
 	var err error
@@ -91,23 +26,7 @@ func GetTasksFuncAPI(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	username := "suraj"
-
-	/*token := r.Header["Token"][0]
-
-	IsTokenValid, username := ValidateToken(token)
-	//When the token is not valid show the default error JSON document
-	if !IsTokenValid {
-		status = types.Status{StatusCode: http.StatusInternalServerError, Message: message}
-		w.WriteHeader(http.StatusInternalServerError)
-		err = json.NewEncoder(w).Encode(status)
-
-		if err != nil {
-			panic(err)
-		}
-		return
-	}*/
-
+	username := sessions.GetCurrentUserName(r)
 	log.Println("token is valid " + username + " is logged in")
 
 	strTaskID = r.URL.Path[len("/api/task/"):]
@@ -164,22 +83,9 @@ func GetTasksFuncAPI(w http.ResponseWriter, r *http.Request) {
 
 //AddTaskFuncAPI will add the tasks for the user
 func AddTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
-	// token := r.Header["Token"][0]
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	username := "suraj"
-	// IsTokenValid, username := ValidateToken(token)
-	//When the token is not valid show the default error JSON document
-	// if !IsTokenValid {
-	// 	status := types.Status{StatusCode: http.StatusInternalServerError, Message: message}
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// 	err = json.NewEncoder(w).Encode(status)
-	//
-	// 		if err != nil {
-	// 			panic(err)
-	// 		}
-	// 		return
-	// 	}
+	username := sessions.GetCurrentUserName(r)
 
 	log.Println("token is valid " + username + " is logged in")
 
@@ -240,21 +146,9 @@ func AddTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 //UpdateTaskFuncAPI will add the tasks for the user
 func UpdateTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 	var taskErr bool
-	// token := r.Header["Token"][0]
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	username := "suraj"
-	// IsTokenValid, username := ValidateToken(token)
-	// When the token is not valid show the default error JSON document
-	// if !IsTokenValid {
-	// status := types.Status{StatusCode: http.StatusInternalServerError, Message: message}
-	// w.WriteHeader(http.StatusInternalServerError)
-	// err = json.NewEncoder(w).Encode(status)
-	//
-	// if err != nil {
-	// panic(err)
-	// }
-	// return
-	// }
+
+	username := sessions.GetCurrentUserName(r)
 
 	log.Println("update func token is valid " + username + " is logged in")
 
@@ -276,8 +170,8 @@ func UpdateTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var hidden int
-	hideTimeline := r.FormValue("hide")
-	if hideTimeline != "" {
+	hideTimeline := r.FormValue("ishidden")
+	if hideTimeline == "true" {
 		hidden = 1
 	} else {
 		hidden = 0
@@ -316,24 +210,11 @@ func UpdateTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 //DeleteTaskFuncAPI will add the tasks for the user
+// currently not used
 func DeleteTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		token := r.Header["Token"][0]
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-		IsTokenValid, username := ValidateToken(token)
-		//When the token is not valid show the default error JSON document
-		if !IsTokenValid {
-			status := types.Status{StatusCode: http.StatusInternalServerError, Message: message}
-			w.WriteHeader(http.StatusInternalServerError)
-			err = json.NewEncoder(w).Encode(status)
-
-			if err != nil {
-				panic(err)
-			}
-			return
-		}
-
+		username := "suraj"
 		log.Println("token is valid " + username + " is logged in")
 		var strtaskID string
 		strtaskID = r.URL.Path[len("/api/delete-task/"):]
@@ -376,23 +257,9 @@ func GetCompletedTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 		var tasks types.Tasks
 		var status types.Status
 
-		//token := r.Header["Token"][0]
-
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		username := "suraj"
-		//IsTokenValid, username := ValidateToken(token)
-		//When the token is not valid show the default error JSON document
-		//if !IsTokenValid {
-		//	status = types.Status{StatusCode: http.StatusInternalServerError, Message: message}
-		//	w.WriteHeader(http.StatusInternalServerError)
-		//	err = json.NewEncoder(w).Encode(status)
-		//
-		//			if err != nil {
-		//				panic(err)
-		//			}
-		//			return
-		//		}
 
+		username := sessions.GetCurrentUserName(r)
 		log.Println("token is valid " + username + " is logged in")
 
 		//this is when we get a request for all the deleted tasks for that user
@@ -429,23 +296,8 @@ func GetDeletedTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 		var tasks types.Tasks
 		var status types.Status
 
-		//token := r.Header["Token"][0]
-
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		username := "suraj"
-		//IsTokenValid, username := ValidateToken(token)
-		//When the token is not valid show the default error JSON document
-		//if !IsTokenValid {
-		//	status = types.Status{StatusCode: http.StatusInternalServerError, Message: message}
-		//	w.WriteHeader(http.StatusInternalServerError)
-		//	err = json.NewEncoder(w).Encode(status)
-		//
-		//			if err != nil {
-		//				panic(err)
-		//			}
-		//			return
-		//		}
-
+		username := sessions.GetCurrentUserName(r)
 		log.Println("token is valid " + username + " is logged in")
 
 		//this is when we get a request for all the deleted tasks for that user
@@ -478,26 +330,9 @@ func GetDeletedTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 //depends on the ID that we get, if we get all, then return all categories of the user as a JSON.
 func GetCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
 	var err error
-	//var message string
-	//var status types.Status
-
-	//	token := r.Header["Token"][0]
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	username := "suraj"
-
-	/*	IsTokenValid, username := ValidateToken(token)
-		//When the token is not valid show the default error JSON document
-		if !IsTokenValid {
-			status = types.Status{StatusCode: http.StatusInternalServerError, Message: message}
-			w.WriteHeader(http.StatusInternalServerError)
-			err = json.NewEncoder(w).Encode(status)
-
-			if err != nil {
-				panic(err)
-			}
-			return
-		} */
+	username := sessions.GetCurrentUserName(r)
 
 	log.Println("token is valid " + username + " is logged in")
 	categories, _ := db.GetCategories(username)
@@ -520,23 +355,8 @@ func AddCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
 	var statusCode int
 	var categoryErr bool
 
-	// token := r.Header["Token"][0]
-
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	username := "suraj"
-
-	//IsTokenValid, username := ValidateToken(token)
-	//When the token is not valid show the default error JSON document
-	//if !IsTokenValid {
-	//	status = types.Status{StatusCode: http.StatusInternalServerError, Message: message}
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	err = json.NewEncoder(w).Encode(status)
-
-	//	if err != nil {
-	//		panic(err)
-	//	}
-	//	return
-	//}
+	username := sessions.GetCurrentUserName(r)
 
 	log.Println("token is valid " + username + " is logged in")
 	r.ParseForm()
@@ -581,24 +401,10 @@ func UpdateCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
 	var catErr bool
 	var status types.Status
 
-	//token := r.Header["Token"][0]
-	username := "suraj"
+	username := sessions.GetCurrentUserName(r)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	/*	IsTokenValid, username := ValidateToken(token)
-		//When the token is not valid show the default error JSON document
-		if !IsTokenValid {
-			status = types.Status{StatusCode: http.StatusInternalServerError, Message: message}
-			w.WriteHeader(http.StatusInternalServerError)
-			err = json.NewEncoder(w).Encode(status)
-
-			if err != nil {
-				panic(err)
-			}
-			return
-		}
-	*/
 	log.Println("token is valid " + username + " is logged in")
 
 	r.ParseForm()
@@ -647,23 +453,8 @@ func DeleteCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
 	var message string
 	var catErr bool
 
-	// token := r.Header["Token"][0]
-	username := "suraj"
-
+	username := sessions.GetCurrentUserName(r)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	//	IsTokenValid, username := ValidateToken(token)
-	//When the token is not valid show the default error JSON document
-	//	if !IsTokenValid {
-	//		status := types.Status{StatusCode: http.StatusInternalServerError, Message: message}
-	//		w.WriteHeader(http.StatusInternalServerError)
-	//		err = json.NewEncoder(w).Encode(status)
-
-	//		if err != nil {
-	//			panic(err)
-	//		}
-	//		return
-	//	}
 
 	log.Println("token is valid " + username + " is logged in")
 
@@ -705,7 +496,7 @@ func DeleteCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
 func ShowCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
 	var status types.Status
 	category := r.URL.Path[len("/api/category/"):]
-	username := "suraj"
+	username := sessions.GetCurrentUserName(r)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	if category == "" {
@@ -758,7 +549,7 @@ func CompleteTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-	username := "suraj"
+	username := sessions.GetCurrentUserName(r)
 	err = db.CompleteTask(username, id)
 	if err != nil {
 		message = "Error completing task"
@@ -792,7 +583,7 @@ func RestoreTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-	username := "suraj"
+	username := sessions.GetCurrentUserName(r)
 	err = db.RestoreTask(username, id)
 	if err != nil {
 		message = "Error trashing task"
@@ -826,7 +617,7 @@ func TrashTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-	username := "suraj"
+	username := sessions.GetCurrentUserName(r)
 	err = db.TrashTask(username, id)
 	if err != nil {
 		message = "Error trashing task"
@@ -859,7 +650,7 @@ func RestoreFromCompleteFuncAPI(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-	username := "suraj"
+	username := sessions.GetCurrentUserName(r)
 	err = db.RestoreTaskFromComplete(username, id)
 	if err != nil {
 		message = "Error trashing task"
@@ -901,8 +692,7 @@ func AddCommentFuncAPI(w http.ResponseWriter, r *http.Request) {
 		err = json.NewEncoder(w).Encode(status)
 		return
 	}
-	//username := sessions.GetCurrentUserName(r)
-	username := "suraj"
+	username := sessions.GetCurrentUserName(r)
 	err = db.AddComments(username, idInt, text)
 	htstatus := http.StatusOK
 	if err != nil {
@@ -937,8 +727,7 @@ func DeleteCommentFuncAPI(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	//username := sessions.GetCurrentUserName(r)
-	username := "suraj"
+	username := sessions.GetCurrentUserName(r)
 
 	err = db.DeleteCommentByID(username, commentID)
 	htStatus := http.StatusOK

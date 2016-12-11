@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 
@@ -35,8 +34,8 @@
     <span id="tasks">
     <!-- The navigation bar-->
     
-    <a v-if="notificationVisible" v-on:click="hide"><div id = "noti" class="notification"><span id="message"><p id="actlMsg">${notification}</p></span></div></a>
-    
+    <a v-if="notificationVisible" v-on:click="hide"><div id = "noti" class="notification"><span id="message"><p id="actlMsg">${notification}</p></span></div>
+    </a>
     <nav class="navbar navbar-default navbar-fixed-top mainHeader">
         <div class="container-fluid">
             <div class="navbar-header">
@@ -46,17 +45,17 @@
                    <a v-on:click="deleteCategory(selectedCategoryName)"> <button  data-original-title="Delete Category" data-placement="bottom" data-toggle="tooltip" title="" class="btn btn-action glyphicon glyphicon-trash"  type="button"></button></a>
                    <button  data-original-title="Edit Category" data-placement="bottom" data-toggle="tooltip" id="editCatFrmBtn" title="" class="btn btn-action glyphicon glyphicon-pencil"  type="button" @click="toggleEditCategoryForm()"></button>
                   </template>
-                   <a href="/logout"> <button  data-original-title="Logout" data-placement="bottom" data-toggle="tooltip" title="Logout" class="btn btn-action glyphicon glyphicon-off"  type="button"></button></a>
+                   <a @click="logout()"> <button  data-original-title="Logout" data-placement="bottom" data-toggle="tooltip" title="Logout" class="btn btn-action glyphicon glyphicon-off"  type="button"></button></a>
                 </span>
                 <p class="navbar-brand">
                     ${navigation}
                 </p>
-		<template v-if="categoryEdit">
-                    <form method="POST" id="EditForm" v-on:submit.prevent="onSubmit" >
+                <template v-if="categoryEdit">
+                    <form method="POST" id="EditForm" v-on:submit.prevent="onSubmit">
                         <input type="text" name="catname" placeholder="new category name" v-model="newCategoryName">
                         <button type="submit" v-on:click="updateCategory(selectedCategoryName, newCategoryName)" class="btn btn-default"> Submit </button>
                     </form>
-	 	</template>
+                </template>
                 <form action="/search/" method="POST" class="hidden" id="SearchForm">
                     <input type="text" name="query" placeholder="Search">
                     <input type="submit" value="Submit" class="btn btn-default" />
@@ -97,18 +96,18 @@
                                 </span>
                             </li>
                             <template v-if="categories.length">
-	                            <template v-for="category in categories">
-		                            <li class="sidebar-item">
-		                                <a v-on:click="taskByCategory(category.categoryName)" v-bind:class="{active: (selectedCategoryName==category.categoryName)}">
-		                                    <span class="nav-item"> ${category.categoryName}</span> <span class="badge pull-right">${category.taskCount}</span></a>
-		                            </li>
-	                            </template>
-	                         </template>
-	                         <template v-else>
-					 <li class="sidebar-item">
-				    		 <a> No categories present!</a>
-					 </li>
-				 </template>
+                                <template v-for="category in categories">
+                                    <li class="sidebar-item">
+                                        <a v-on:click="taskByCategory(category.categoryName)" v-bind:class="{active: (selectedCategoryName==category.categoryName)}">
+                                            <span class="nav-item"> ${category.categoryName}</span> <span class="badge pull-right">${category.taskCount}</span></a>
+                                    </li>
+                                </template>
+                            </template>
+                            <template v-else>
+                                <li class="sidebar-item">
+                                    <a> No categories present!</a>
+                                </li>
+                            </template>
                         </ul>
                     </li>
                 </ul>
@@ -128,9 +127,9 @@
                 <div class="modal-body">
                     <form enctype="multipart/form-data" method="POST" v-on:submit.prevent="onSubmit">
                         <div class="form-group">
-                            <input type="text" name="title" class="form-control" id="add-note-title" v-model="task.title" placeholder="Title" >
+                            <input type="text" name="title" class="form-control" id="add-note-title" v-model="task.title" placeholder="Title">
                             <input class="hidden" name="CSRFToken" value="" />
-			    <input class="hidden" name="id" v-model="task.id" />
+                            <input class="hidden" name="id" v-model="task.id" />
                         </div>
                         <div class="form-group">
                             <textarea class="form-control" name="content" id="add-note-content" placeholder="Content" rows="10" v-model="task.content"></textarea>
@@ -144,7 +143,7 @@
                             <input type="radio" name="priority" value="2" v-model="task.priority" /> Medium
                             <input type="radio" name="priority" value="1" v-model="task.priority" /> Low
                             <br>
-                            <input type="checkbox" name="hide" id="hideChk"> Hide from timeline
+                            <input type="checkbox" v-model="task.ishidden" name="hide" id="hideChk"> Hide from timeline
                         </div>
                         Category:
                         <select name="category" class="dropdown" v-model="task.category">
@@ -156,95 +155,119 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-		   <template v-if="isEditing"> 
-                    <button type="button" class="btn btn-primary" v-on:click="updateTask(task)">Update</button>
-		   </template>
-		   <template v-else>
-                    <button type="button" class="btn btn-primary" v-on:click="addTask(task)">Submit</button>
-		   </template>
+                    <template v-if="isEditing">
+                        <button type="button" class="btn btn-primary" v-on:click="updateTask(task)">Update</button>
+                    </template>
+                    <template v-else>
+                        <button type="button" class="btn btn-primary" v-on:click="addTask(task)">Submit</button>
+                    </template>
                 </div>
             </div>
         </div>
     </div>
     <div class="timeline">
-		<span v-if="tasks.length">
-            <span v-for="(task, taskIndex) in tasks">
-                <div class="note" v-bind:id="task.id">
-                    <p class="noteHeading ">${task.title}</p> 
-                    <span class="toggle glyphicon glyphicon-resize-full" v-on:click="toggleContent(task)"></span>
-                    <span class="noteContent" v-show="task.showComment">
-                            ${task.content} 
-                            <template v-if="task.completed">${task.completed}</template>
-                            <div class="commentslist" v-for="(comment, commentIndex) in task.comments">
-                                    <div class="comment">
-                                        <span>${comment.content}</span>
-                                        <span class="timestamp">${comment.author} ${comment.created}</span>
-                                        <a v-on:click="deleteComment(taskIndex, commentIndex)"><span class="glyphicon glyphicon-trash timestamp"></span></a>
-                                    </div>
-                            </div>
-                            <div class="comment">
-                                <form method="POST" v-on:submit.prevent="onSubmit">
-                                    <textarea rows="2" cols="75" name="commentText" placeholder="Add Comment" v-model="comment.content"></textarea>
-                                    <button class="btn btn-primary" v-on:click="addComment(comment, taskIndex)">Submit</button>
-                                </form>
-                            </div>
-                     </span>
-                     <span class="notefooter">
-				        <ul class="menu">
-				          <li role="presentation">Priority: ${task.priority}</li>
-				          <li role="presentation">
-				              <span class="glyphicon glyphicon-time"></span> ${task.created}</li>
-				          <li role="presentation">
-				
-				            <a role="menuitem" tabindex="-1" >
-				                <span class="glyphicon glyphicon-lock"></span></a>
-				        </li>
-				        <li role="presentation">
-					<template v-if="navigation!='Deleted'">
-				            <a role="menuitem" tabindex="-1" v-on:click="TrashTask(taskIndex, task.id)">
-				            <span class="glyphicon glyphicon-trash"></span></a>
-					</template>
-					<template v-if="navigation=='Deleted'">
-					     <a role="menuitem" tabindex="-1" v-on:click="RestoreTask(taskIndex, task.id)">
-					     <span class="glyphicon glyphicon-inbox"></span></a>
-					</template>
-				        </li>
-					<li role="presentation">
-					<template v-if="navigation=='Completed'">
-						<a role="menuitem" tabindex="-1" v-on:click="inComplete(taskIndex, task.id)" >
-						 <span class="glyphicon glyphicon-eye-close"></span>
-					       </a>
-					</template>
-					<template v-if="navigation!='Completed' && navigation!='Deleted'">
-				            <a role="menuitem" tabindex="-1" v-on:click="complete(taskIndex, task.id)">
-				                <span class="glyphicon glyphicon-check"></span></a>
-					</template>
-				        </li>
-					
-					<template v-if="navigation!='Deleted' && navigation!='Completed'">
-				        <li role="presentation">
-				            <a role="menuitem" tabindex="-1" v-on:click="edit(taskIndex, task.id)">
-				                <span class="glyphicon glyphicon-pencil"></span></a>
-				        </li>
-					</template>
-
-				        <li role="presentation">
-				              <a @click="taskByCategory(task.category)"> ${task.category}</a>
-				          </li>
-				        </ul>
-			        </span>
+        <template v-if="!isLoggedIn">
+            <div class="note">
+                <p class="noteHeading ">Login </p>
+                <div class="form-group">
+                    <form v-on:submit.prevent="onSubmit">
+                        <input type="text" name="username" class="loginbutton" placeholder="Username" v-model="userLogin.username" />
+                        <input type="password" name="password" class="loginbutton" placeholder="Password" v-model="userLogin.password" />
+                        <input type="submit" value="Submit" class="btn btn-primary" @click="login" />
+                    </form>
                 </div>
+            </div>
+            <div class="note">
+                <p class="noteHeading ">Sign up </p>
+                <div class="form-group">
+                    <form action="/signup/" method="POST">
+                        <input type="text" name="username" class="loginbutton" placeholder="Username" />
+                        <input type="password" name="password" class="loginbutton" placeholder="Password" />
+                        <input type="email" name="email" class="loginbutton" placeholder="demo@demo.com" />
+                        <input type="submit" value="Submit" class="btn btn-primary" />
+                    </form>
+                </div>
+            </div>
+        </template>
+        <template v-else>
+            <span v-if="tasks.length"> 
+                <span v-for="(task, taskIndex) in tasks">
+                    <div class="note" v-bind:id="task.id">
+                        <p class="noteHeading ">${task.title}</p> 
+                        <span class="toggle glyphicon glyphicon-resize-full" v-on:click="toggleContent(task)"></span>
+                        <span class="noteContent" v-show="task.showComment">
+                                ${task.content} 
+                                <template v-if="task.completed">${task.completedmsg}</template>
+                                <div class="commentslist" v-for="(comment, commentIndex) in task.comments">
+                                        <div class="comment">
+                                            <span>${comment.content}</span>
+                                            <span class="timestamp">${comment.author} ${comment.created}</span>
+                                            <a v-on:click="deleteComment(taskIndex, commentIndex, task.id, comment.id)">
+                                                <span class="glyphicon glyphicon-trash timestamp"></span>
+                                            </a>
+                                        </div>
+                                </div>
+                                <div class="comment">
+                                    <form method="POST" v-on:submit.prevent="onSubmit">
+                                        <textarea rows="2" cols="75" name="commentText" placeholder="Add Comment" v-model="comment.content"></textarea>
+                                        <button class="btn btn-primary" v-on:click="addComment(comment, taskIndex)">Add Comment</button>
+                                    </form>
+                                </div>
+                        </span>
+                        <span class="notefooter">
+                            <ul class="menu">
+                                <li role="presentation">Priority: ${task.priority}</li>
+                                <li role="presentation">
+                                    <span class="glyphicon glyphicon-time"></span> ${task.created}</li>
+                                <li role="presentation">
+                                    <a role="menuitem" tabindex="-1">
+                                        <span class="glyphicon glyphicon-lock"></span></a>
+                                </li>
+                                <li role="presentation">
+                                    <template v-if="navigation!='Deleted'">
+                                        <a role="menuitem" tabindex="-1" v-on:click="TrashTask(taskIndex, task.id)">
+                                            <span class="glyphicon glyphicon-trash"></span></a>
+                                    </template>
+                                    <template v-if="navigation=='Deleted'">
+                                        <a role="menuitem" tabindex="-1" v-on:click="RestoreTask(taskIndex, task.id)">
+                                            <span class="glyphicon glyphicon-inbox"></span></a>
+                                    </template>
+                                </li>
+                                <li role="presentation">
+                                    <template v-if="navigation=='Completed'">
+                                        <a role="menuitem" tabindex="-1" v-on:click="inComplete(taskIndex, task.id)">
+                                            <span class="glyphicon glyphicon-eye-close"></span>
+                                        </a>
+                                    </template>
+                                    <template v-if="navigation!='Completed' && navigation!='Deleted'">
+                                        <a role="menuitem" tabindex="-1" v-on:click="complete(taskIndex, task.id)">
+                                            <span class="glyphicon glyphicon-check"></span></a>
+                                    </template>
+                                </li>
+                                <template v-if="navigation!='Deleted' && navigation!='Completed'">
+                                    <li role="presentation">
+                                        <a role="menuitem" tabindex="-1" v-on:click="edit(taskIndex, task.id)">
+                                            <span class="glyphicon glyphicon-pencil"></span></a>
+                                    </li>
+                                </template>
+                                <li role="presentation">
+                                    <a @click="taskByCategory(task.category)"> ${task.category}</a>
+                                </li>
+                            </ul>
+                        </span>
+                    </div>
             </span>
             </span>
             <span v-else>
-                <div class="note">
-                    <p class="noteHeading">No Tasks here</p>
-                    <p class="notefooter">Create new task
-                        <button class="floating-action-icon-add" >here </button>
-                    </p>
-                </div>
-            </span>
-    </div>
+                    <div class="note">
+                        <p class="noteHeading">No Tasks here</p>
+                        <p class="notefooter">Create new task
+                            <button class="floating-action-icon-add" >here </button>
+                        </p>
+                    </div>
+                </span>
+        </template>
+        </div>
     </span>
     <footer class="footer">
         Made in India with <span class="glyphicon glyphicon-heart"></span> by <a href="http://github.com/thewhitetulip">@thewhitetulip</a>
@@ -252,5 +275,6 @@
     <script src="/static/js/vue.js"></script>
     <script src="/static/js/vue-resource.js"></script>
     <script src="/static/js/app.js"></script>
-    </body>
-    </html>
+</body>
+
+</html>
