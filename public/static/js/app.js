@@ -15,7 +15,7 @@ var app = new Vue({
   data: {
     navigation: 'Pending', //this is what we will display in the title tag of the main page, Completed/Deleted/Pending
     isLoggedIn: false,
-    user: 'suraj',
+    user: '',
     newCategoryName: '', // this is the new category name to be used in the update category flow
     notificationVisible: false, // This toggles the visibility of the notification
     notification: '', // actual content of the notification
@@ -25,6 +25,11 @@ var app = new Vue({
     userLogin : {
     	username: '',
 	password:''
+    },
+    userSignup : {
+        username: '',
+	password: '',
+	email: ''
     },
     task: {
       id: '',
@@ -61,6 +66,19 @@ var app = new Vue({
   	this.checklogin();
   },
   methods: {
+    signup: function(){
+    	this.$http.put('/api/signup/', this.userSignup, { emulateJSON : true }).then(response => response.json()).then(result => {
+		this.notificationVisible=true;
+		this.notification = "Sign up successful, pls login"
+		this.userSignup = {
+		        username: '',
+		        password: '',
+		        email: ''
+		}
+	}).catch(err => {
+		console.log(err);
+	});
+    },
     checklogin: function(){
         this.$http.get('/api/login/').then(response => response.json()).then(result => {
 		this.isLoggedIn = result.loggedin;

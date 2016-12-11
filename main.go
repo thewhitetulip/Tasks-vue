@@ -64,7 +64,7 @@ func main() {
 	//Login logout
 	r.HandleFunc("/api/login/", views.LoginFuncAPI).Methods("POST", "GET")
 	r.HandleFunc("/api/logout/", views.RequiresLogin(views.LogoutFuncAPI)).Methods("GET")
-	r.HandleFunc("/api/signup/", views.SignUpFuncAPI).Methods("POST")
+	r.HandleFunc("/api/signup/", views.SignUpFuncAPI).Methods("PUT")
 
 	//these handlers perform action like delete, mark as complete etc
 	// http.HandleFunc("/files/", views.RequiresLogin(views.UploadedFileHandler))

@@ -103,28 +103,29 @@ func LoginFuncAPI(w http.ResponseWriter, r *http.Request) {
 func SignUpFuncAPI(w http.ResponseWriter, r *http.Request) {
 	var status types.Status
 	var message = "Sign up success"
-	var htStatus = http.StatusOK
-
+	var statusCode = http.StatusOK
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
+	r.ParseForm()
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
 	email := r.Form.Get("email")
+
 	if username != "" && password != "" && email != "" {
 		log.Println(username, password, email)
 
 		err := db.CreateUser(username, password, email)
 		if err != nil {
-			htStatus = http.StatusInternalServerError
+			statusCode = http.StatusInternalServerError
 			message = "Something went wront"
 		}
 	} else {
+		statusCode = http.StatusBadRequest
 		message = "Invalid input"
-		htStatus = http.StatusBadRequest
 	}
 
-	w.WriteHeader(htStatus)
-	status = types.Status{htStatus, message}
+	w.WriteHeader(statusCode)
+	status = types.Status{statusCode, message}
 	err = json.NewEncoder(w).Encode(status)
 
 	if err != nil {

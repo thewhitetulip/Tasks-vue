@@ -173,18 +173,18 @@
                     <form v-on:submit.prevent="onSubmit">
                         <input type="text" name="username" class="loginbutton" placeholder="Username" v-model="userLogin.username" />
                         <input type="password" name="password" class="loginbutton" placeholder="Password" v-model="userLogin.password" />
-                        <input type="submit" value="Submit" class="btn btn-primary" @click="login" />
+                        <input type="submit" value="Login" class="btn btn-primary" @click="login" />
                     </form>
                 </div>
             </div>
             <div class="note">
                 <p class="noteHeading ">Sign up </p>
                 <div class="form-group">
-                    <form action="/signup/" method="POST">
-                        <input type="text" name="username" class="loginbutton" placeholder="Username" />
-                        <input type="password" name="password" class="loginbutton" placeholder="Password" />
-                        <input type="email" name="email" class="loginbutton" placeholder="demo@demo.com" />
-                        <input type="submit" value="Submit" class="btn btn-primary" />
+                    <form  v-on:submit.prevent="onSubmit">
+                        <input type="text" name="username" class="loginbutton" placeholder="Username" v-model="userSignup.username" />
+                        <input type="password" name="password" class="loginbutton" placeholder="Password" v-model="userSignup.password" />
+                        <input type="email" name="email" class="loginbutton" placeholder="demo@demo.com" v-model="userSignup.email"/>
+                        <input type="submit" value="Signup" class="btn btn-primary"  @click="signup()" />
                     </form>
                 </div>
             </div>
