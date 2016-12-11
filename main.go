@@ -43,7 +43,7 @@ func main() {
 	r.HandleFunc("/api/task/", views.GetTasksFuncAPI).Methods("GET")
 	r.HandleFunc("/api/task/", views.AddTaskFuncAPI).Methods("PUT")
 	r.HandleFunc("/api/task/", views.UpdateTaskFuncAPI).Methods("POST")
-	r.HandleFunc("/api/task/", views.DeleteTaskFuncAPI).Methods("DELETE")
+	r.HandleFunc("/api/task/{id}", views.TrashTaskFuncAPI).Methods("DELETE")
 	r.HandleFunc("/api/deleted/", views.GetDeletedTaskFuncAPI).Methods("GET")
 
 	r.HandleFunc("/api/completed/", views.GetCompletedTaskFuncAPI).Methods("GET")
@@ -51,7 +51,6 @@ func main() {
 
 	r.HandleFunc("/api/category/{category}", views.ShowCategoryFuncAPI).Methods("GET")
 	r.HandleFunc("/api/category/{category}", views.DeleteCategoryFuncAPI).Methods("DELETE")
-	r.HandleFunc("/api/trash-task/{id}", views.TrashTaskFuncAPI).Methods("GET")
 	r.HandleFunc("/api/complete-task/{id}", views.CompleteTaskFuncAPI).Methods("GET")
 	r.HandleFunc("/api/incomplete-task/{id}", views.RestoreFromCompleteFuncAPI).Methods("GET")
 	r.HandleFunc("/api/restore-task/{id}", views.RestoreTaskFuncAPI).Methods("GET")
