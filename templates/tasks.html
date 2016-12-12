@@ -89,7 +89,7 @@
                                  <form  method="POST" v-on:submit.prevent="OnSubmit">
                                  <span> 
 				         <input type="text" name="category" width="50px" v-model="category.categoryName">
-				         <button v-on:click="addCategory" class="btn btn-primary">Add Category</button>
+				         <button v-on:click="addCategory" class="btn btn-primary">Add</button>
                                  </span>
                                 </form>
                                 </span>
@@ -153,7 +153,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <template v-if="isEditing">
                         <button type="button" class="btn btn-primary" v-on:click="UpdateTask(task)">Update Task</button>
                     </template>
@@ -224,22 +224,22 @@
                                 </li>
                                 <li role="presentation">
                                     <template v-if="navigation!='Deleted'">
-                                        <a role="menuitem" tabindex="-1" v-on:click="TrashTask(taskIndex, task.id)">
+                                        <a role="menuitem" tabindex="-1" v-on:click="TrashTask(taskIndex, task.id, task.category)">
                                             <span class="glyphicon glyphicon-trash"></span></a>
                                     </template>
                                     <template v-if="navigation=='Deleted'">
-                                        <a role="menuitem" tabindex="-1" v-on:click="RestoreTask(taskIndex, task.id)">
+                                        <a role="menuitem" tabindex="-1" v-on:click="RestoreTask(taskIndex, task.id, task.category)">
                                             <span class="glyphicon glyphicon-inbox"></span></a>
                                     </template>
                                 </li>
                                 <li role="presentation">
                                     <template v-if="navigation=='Completed'">
-                                        <a role="menuitem" tabindex="-1" v-on:click="inComplete(taskIndex, task.id)">
+                                        <a role="menuitem" tabindex="-1" v-on:click="inComplete(taskIndex, task.id, task.category)">
                                             <span class="glyphicon glyphicon-eye-close"></span>
                                         </a>
                                     </template>
                                     <template v-if="navigation!='Completed' && navigation!='Deleted'">
-                                        <a role="menuitem" tabindex="-1" v-on:click="CompleteTask(taskIndex, task.id)">
+                                        <a role="menuitem" tabindex="-1" v-on:click="CompleteTask(taskIndex, task.id, task.category)">
                                             <span class="glyphicon glyphicon-check"></span></a>
                                     </template>
                                 </li>
