@@ -67,7 +67,7 @@ var app = new Vue({
   },
   methods: {
     signup: function(){
-    	this.$http.put('/api/signup/', this.userSignup, { emulateJSON : true }).then(response => response.json()).then(result => {
+    	this.$http.put('/signup/', this.userSignup, { emulateJSON : true }).then(response => response.json()).then(result => {
 		this.notificationVisible=true;
 		this.notification = "Sign up successful, pls login"
 		this.userSignup = {
@@ -80,26 +80,26 @@ var app = new Vue({
 	});
     },
     checklogin: function(){
-        this.$http.get('/api/login/').then(response => response.json()).then(result => {
+        this.$http.get('/login/').then(response => response.json()).then(result => {
 		this.isLoggedIn = result.loggedin;
-		this.fetchCategories();
-		this.fetchTasks();
+		this.FetchCategories();
+		this.FetchTasks();
 	}).catch(err => {
 		console.log(err);
 	});
     },
     login: function () {
-    	this.$http.post('/api/login/', this.userLogin, { emulateJSON : true }).then(response => response.json()).then(result => {
+    	this.$http.post('/login/', this.userLogin, { emulateJSON : true }).then(response => response.json()).then(result => {
     		this.isLoggedIn = true;
-		this.fetchCategories();
-		this.fetchTasks();
+		this.FetchCategories();
+		this.FetchTasks();
 		this.userLogin = {username:'', password:''}
 	}).catch(err => {
 		console.log(err);
 	});
     },
     logout: function () {
-    	this.$http.get('/api/logout/').then(response => response.json())
+    	this.$http.get('/logout/').then(response => response.json())
 		.then(result => {
 			this.isLoggedIn = false;
 		}).catch(err => {
@@ -107,28 +107,30 @@ var app = new Vue({
 		});
     },
     // This will fetch task from the DB
-    fetchTasks: function () {
+    FetchTasks: function () {
       this.tasks = [
       ];
-      this.$http.get('/api/task/').then(response => response.json()).then(result => {
+      this.$http.get('/task/').then(response => response.json()).then(result => {
         if (result != null) {
           Vue.set(this.$data, 'tasks', result);
         }
       }).catch (err => {
         console.log(err);
 	isLoggedIn = false;
+	this.notificationVisible = true;
+	this.notification = "unable to fetch tasks";
       });
     },
-    fetchCategories: function () {
-      this.$http.get('/api/categories/').then(response => response.json()).then(result => {
+    FetchCategories: function () {
+      this.$http.get('/categories/').then(response => response.json()).then(result => {
         Vue.set(this.$data, 'categories', result);
       }).catch (err => {
         console.log(err);
       });
     },
     // this will add the task from the user input to our array
-    addTask: function (item) {
-      this.$http.put('/api/task/', this.task, {
+    AddTask: function (item) {
+      this.$http.put('/task/', this.task, {
         emulateJSON: true
       }).then(response => response).then(result => {
        if (this.task.ishidden == false) {
@@ -160,8 +162,8 @@ var app = new Vue({
     	this.categoryEdit= ! this.categoryEdit;
     },
     // this will add the task from the user input to our array
-    updateTask: function (item) {
-      this.$http.post('/api/task/', this.task, {
+    UpdateTask: function (item) {
+      this.$http.post('/task/', this.task, {
         emulateJSON: true
       }).then(response => response).then(result => {
         // this.tasks.push(this.task);
@@ -198,7 +200,7 @@ var app = new Vue({
     // this will add a new category to our data store
     addCategory: function () {
       console.log(this.category);
-      this.$http.put("/api/category/", this.category,{
+      this.$http.put("/category/", this.category,{
       	emulateJSON: true
       }).then(response => response.json()).then(result => {
       		this.category.taskCount = 0;
@@ -208,15 +210,16 @@ var app = new Vue({
       			categoryName: '',
         		taskCount: ''
       		};
+      		this.notificationVisible = true;
+	        this.notification = 'Category Added';
       }).catch (err => {
       		console.log(err);
+      		this.notificationVisible = true;
+	        this.notification = 'Unable to add category';
       });
-      console.log(this.category.categoryName);
-      this.notificationVisible = true;
-      this.notification = 'Category Added';
     },
     deleteCategory: function (name) {
-     this.$http.delete('/api/category/'+name).then(response => response.json())
+     this.$http.delete('/category/'+name).then(response => response.json())
      	.then(result => {	
 		console.log('deleting ' + name);
 		var index = 0;
@@ -226,7 +229,7 @@ var app = new Vue({
         	   }
       		}
 	      this.categories.splice(index, 1);
-	      this.fetchTasks();
+	      this.FetchTasks();
 	      this.navigation='Pending';
 	      this.selectedTaskTypeName = 'pending'
 	}).catch(err => {
@@ -237,7 +240,7 @@ var app = new Vue({
     addComment: function (comment, taskIndex) {
      this.comment.taskID = this.tasks[taskIndex].id;
      console.log(this.tasks[taskIndex].title, this.tasks[taskIndex].id);
-     this.$http.put('/api/comment/', this.comment, {
+     this.$http.put('/comment/', this.comment, {
      	emulateJSON: true
      }).then(response => response.json()).then(result => {
         this.comment.author = this.user;
@@ -268,7 +271,7 @@ var app = new Vue({
     },
     // will delete a comment
     deleteComment: function (taskIndex, commentIndex, taskID, commentID) {
-     this.$http.delete('/api/comment/'+commentID).then(response => response.json())
+     this.$http.delete('/comment/'+commentID).then(response => response.json())
      	.then(result => {
               this.tasks[taskIndex].comments.splice(commentIndex, 1);
               this.notificationVisible = true;
@@ -292,31 +295,39 @@ var app = new Vue({
     },
     // will trash a task, won't delete from db
     TrashTask: function (index, taskID) {
-      this.$http.delete('/api/task/' + taskID).then(response => response.json()).then(result => {
+      this.$http.delete('/task/' + taskID).then(response => response.json()).then(result => {
         this.tasks.splice(index, 1);
-      })
-      this.notificationVisible = true;
-      this.notification = 'Deleted';
+        this.notificationVisible = true;
+        this.notification = 'Deleted';
+      }).catch(err => {
+     	console.log(err); 
+        this.notificationVisible = true;
+        this.notification = 'Deleted';
+      });
     },
     // will restore a task from deleted
     RestoreTask: function (index, taskID) {
-      this.$http.get('/api/restore-task/' + taskID).then(response => response.json()).then(result => {
+      this.$http.get('/restore-task/' + taskID).then(response => response.json()).then(result => {
         this.tasks.splice(index, 1);
       })
       this.notificationVisible = true;
       this.notification = 'Restored';
     },
     // this will mark the task as completed
-    complete: function (taskIndex, taskID) {
-      this.$http.get('/api/complete-task/' + taskID).then(response => response.json()).then(result => {
+    CompleteTask: function (taskIndex, taskID) {
+      this.$http.get('/complete-task/' + taskID).then(response => response.json()).then(result => {
         this.tasks.splice(taskIndex, 1);
         console.log('completing ' + taskIndex)
-      })
-      this.notificationVisible = true;
-      this.notification = 'marked as complete';
+        this.notificationVisible = true;
+        this.notification = 'marked as complete';
+      }).catch(err => {
+      	console.log(err);
+        this.notificationVisible = true;
+        this.notification = 'unable to marked as complete';
+      });
     },
     inComplete: function (taskIndex, taskID) {
-      this.$http.get('/api/incomplete-task/' + taskID).then(response => response.json()).then(result => {
+      this.$http.get('/incomplete-task/' + taskID).then(response => response.json()).then(result => {
         this.tasks.splice(taskIndex, 1);
         console.log('incomplete ' + taskIndex)
       })
@@ -328,29 +339,36 @@ var app = new Vue({
     taskByCategory: function (category) {
       this.selectedCategoryName = category;
       this.navigation = this.selectedCategoryName;
-      //			this.selectedCategoryID =
       this.tasks = [];
       this.selectedTaskTypeName = '';
-      this.$http.get('/api/category/' + this.selectedCategoryName).then(response => response.json()).then(result => {
-      if (result!= null) {
-        Vue.set(this.$data, 'tasks', result);
-      }
-      })
+      this.$http.get('/category/' + this.selectedCategoryName).then(response => response.json()).then(result => {
+          if (result!= null) {
+            Vue.set(this.$data, 'tasks', result);
+          }
+      }).catch(err => {
+          console.log(err);
+	  this.notificationVisible= true;
+	  this.notification = "Unable to fetch tasks";
+      });
     },
     // shows completed tasks
     showCompletedTasks: function (type) {
       this.tasks = [
       ];
-      this.$http.get('/api/completed/').then(response => response.json()).then(result => {
+      this.$http.get('/completed/').then(response => response.json()).then(result => {
         Vue.set(this.$data, 'tasks', result);
-      })
-      this.selectedTaskTypeName = 'completed';
-      this.navigation = 'Completed';
-      this.selectedCategoryName = '';
+        this.selectedTaskTypeName = 'completed';
+        this.navigation = 'Completed';
+        this.selectedCategoryName = '';
+      }).catch(err => {
+        console.log(err);
+	this.notificationVisible = true;
+	this.notification = "Unable to fetch tasks";
+      });
     },
     // shows pending tasks
     showPendingTasks: function (type) {
-      this.fetchTasks();
+      this.FetchTasks();
       this.selectedTaskTypeName = 'pending';
       this.navigation = 'Pending';
       this.selectedCategoryName = ''
@@ -359,12 +377,16 @@ var app = new Vue({
     showDeletedTasks: function (type) {
       this.tasks = [
       ];
-      this.$http.get('/api/deleted/').then(response => response.json()).then(result => {
+      this.$http.get('/deleted/').then(response => response.json()).then(result => {
         Vue.set(this.$data, 'tasks', result)
-      })
-      this.selectedTaskTypeName = 'deleted';
-      this.navigation = 'Deleted';
-      this.selectedCategoryName = ''
+        this.selectedTaskTypeName = 'deleted';
+        this.navigation = 'Deleted';
+        this.selectedCategoryName = ''
+      }).catch(err => {
+     	console.log(err);
+	this.notificationVisible = true;
+	this.notification = "Unable to fetch tasks";
+      });
     },
     // used to toggle the visibility of the note's comment area + content area
     toggleContent: function (item) {
@@ -374,7 +396,7 @@ var app = new Vue({
       // update the category name in the db
       // this logic is temporary and will be removed later
       category = {newCategoryName: this.newCategoryName}
-      this.$http.post('/api/category/' + oldName, category, {
+      this.$http.post('/category/' + oldName, category, {
       	emulateJSON:true
       }).then(response => response.json()).then(result => {
 
@@ -386,7 +408,10 @@ var app = new Vue({
 	    this.toggleEditCategoryForm();
           }
         }
-
+      }).catch(err => {
+          console.log(err);
+	  this.notificationVisible = true;
+	  this.notification = "Unable to update";
       });
 
     }

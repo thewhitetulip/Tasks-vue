@@ -85,12 +85,11 @@
                             <hr>
                             <li class="sidebar-item">
                                 <h5> Categories</h5>
-                                <!--<button title="New category" id="toggleCategoryForm" data-placement="left" data-toggle="tooltip" class="btn glyphicon glyphicon-plus" style="font-size:small; margin-left:120px;"></button>-->
                                 <span id="categoryForm">
                                  <form  method="POST" v-on:submit.prevent="OnSubmit">
                                  <span> 
 				         <input type="text" name="category" width="50px" v-model="category.categoryName">
-				         <button v-on:click="addCategory" class="btn btn-primary">Submit</button>
+				         <button v-on:click="addCategory" class="btn btn-primary">Add Category</button>
                                  </span>
                                 </form>
                                 </span>
@@ -156,10 +155,10 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
                     <template v-if="isEditing">
-                        <button type="button" class="btn btn-primary" v-on:click="updateTask(task)">Update</button>
+                        <button type="button" class="btn btn-primary" v-on:click="UpdateTask(task)">Update Task</button>
                     </template>
                     <template v-else>
-                        <button type="button" class="btn btn-primary" v-on:click="addTask(task)">Submit</button>
+                        <button type="button" class="btn btn-primary" v-on:click="AddTask(task)">Add Task</button>
                     </template>
                 </div>
             </div>
@@ -240,7 +239,7 @@
                                         </a>
                                     </template>
                                     <template v-if="navigation!='Completed' && navigation!='Deleted'">
-                                        <a role="menuitem" tabindex="-1" v-on:click="complete(taskIndex, task.id)">
+                                        <a role="menuitem" tabindex="-1" v-on:click="CompleteTask(taskIndex, task.id)">
                                             <span class="glyphicon glyphicon-check"></span></a>
                                     </template>
                                 </li>
