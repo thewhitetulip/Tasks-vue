@@ -17,7 +17,7 @@ const unableToProcess = "Something went wrong"
 
 //GetTasksFuncAPI fetches tasks depending on the request, the authorization will be taken care by our middleare
 //in this function we will return all the tasks to the user or tasks per category
-//GET /api/tasks/
+//GET /tasks/
 func GetTasksFuncAPI(w http.ResponseWriter, r *http.Request) {
 	var strTaskID string
 	var err error
@@ -31,7 +31,7 @@ func GetTasksFuncAPI(w http.ResponseWriter, r *http.Request) {
 	username := sessions.GetCurrentUserName(r)
 	log.Println("token is valid " + username + " is logged in")
 
-	strTaskID = r.URL.Path[len("/api/task/"):]
+	strTaskID = r.URL.Path[len("/task/"):]
 	//this is when we get a request for all the tasks for that user
 	if strTaskID == "" {
 		context, err := db.GetTasks(username, "pending", "")
@@ -329,7 +329,7 @@ func UpdateCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 
-	oldName := r.URL.Path[len("/api/category/"):]
+	oldName := r.URL.Path[len("/category/"):]
 	oldName = strings.Trim(oldName, "/")
 
 	newName := r.Form.Get("newCategoryName")
@@ -361,7 +361,7 @@ func DeleteCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
 	message := "Category Deleted"
 	var statusCode = http.StatusOK
 
-	categoryName := r.URL.Path[len("/api/category/"):]
+	categoryName := r.URL.Path[len("/category/"):]
 	categoryName = strings.Trim(categoryName, "/")
 	categoryName = strings.Trim(categoryName, " ")
 
@@ -388,12 +388,12 @@ func DeleteCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
 
 // ShowCategoryFuncAPI will return all the tasks of a particular category
 // we will be returning a status internal server error in case we do not find the
-// tasks of that category, the url it will handle is GET /api/categories/<value>; if value is nil it'll return a JSON error
+// tasks of that category, the url it will handle is GET /categories/<value>; if value is nil it'll return a JSON error
 func ShowCategoryFuncAPI(w http.ResponseWriter, r *http.Request) {
 	message := "Success"
 	statusCode := http.StatusOK
 
-	category := r.URL.Path[len("/api/category/"):]
+	category := r.URL.Path[len("/category/"):]
 
 	if category == "" {
 		statusCode = http.StatusBadRequest
@@ -436,7 +436,7 @@ func CompleteTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 	statusCode := http.StatusOK
 	message := "Task completed"
 
-	id, err := strconv.Atoi(r.URL.Path[len("/api/complete-task/"):])
+	id, err := strconv.Atoi(r.URL.Path[len("/complete-task/"):])
 	if err != nil {
 		log.Println("CompleteTaskFuncAPI", err)
 		message = unableToProcess
@@ -463,7 +463,7 @@ func RestoreTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 	var statusCode = http.StatusOK
 	var message = "Task restored from Trash"
 
-	id, err := strconv.Atoi(r.URL.Path[len("/api/restore-task/"):])
+	id, err := strconv.Atoi(r.URL.Path[len("/restore-task/"):])
 
 	if err != nil {
 		log.Println("RestoreTaskFunAPI", err)
@@ -488,13 +488,13 @@ func RestoreTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// TrashTaskFuncAPI handles the GET /api/trash-task/ and trashes the ID passed in the URL.
+// TrashTaskFuncAPI handles the GET /trash-task/ and trashes the ID passed in the URL.
 // return JSON {http status code, output of operation}.
 func TrashTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 	var statusCode = http.StatusOK
 	var message = "Task Trashed"
 
-	id, err := strconv.Atoi(r.URL.Path[len("/api/task/"):])
+	id, err := strconv.Atoi(r.URL.Path[len("/task/"):])
 	if err != nil {
 		log.Println("TrashTaskFunc", err)
 		message = unableToProcess
@@ -518,7 +518,7 @@ func TrashTaskFuncAPI(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// RestoreFromCompleteFuncAPI handles the GET /api/incomplete-task/ and restores the status of task
+// RestoreFromCompleteFuncAPI handles the GET /incomplete-task/ and restores the status of task
 // from complete to pending.
 // Returns a JSON {http status code, output} like {400, "Not Deleted"} or {200, "Comment deleted"}.
 // The status code is also written in the HTTP header of the response.
@@ -526,7 +526,7 @@ func RestoreFromCompleteFuncAPI(w http.ResponseWriter, r *http.Request) {
 	var statusCode = http.StatusOK
 	var message = "Marked Incomplete"
 
-	id, err := strconv.Atoi(r.URL.Path[len("/api/incomplete-task/"):])
+	id, err := strconv.Atoi(r.URL.Path[len("/incomplete-task/"):])
 
 	if err != nil {
 		log.Println("api.go: RestoreFromComplete", err)
@@ -550,7 +550,7 @@ func RestoreFromCompleteFuncAPI(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// AddCommentFuncAPI handles the PUT /api/comment/ and adds a new comment to the database.
+// AddCommentFuncAPI handles the PUT /comment/ and adds a new comment to the database.
 // Each comment has a parent task, comments can't be parents of comments.
 // Returns a JSON {http status code, output} like {400, "Unable to add comment"} or {200, "Comment Added"}.
 // The status code is also written in the HTTP header of the response.
@@ -590,7 +590,7 @@ func AddCommentFuncAPI(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// DeleteCommentFuncAPI handles the DELETE /api/comment/12 and deletes a comment with ID 12.
+// DeleteCommentFuncAPI handles the DELETE /comment/12 and deletes a comment with ID 12.
 // Returns a JSON {http status code, output} like {400, "Not Deleted"} or {200, "Comment deleted"}.
 // The status code is also written in the HTTP header of the response.
 func DeleteCommentFuncAPI(w http.ResponseWriter, r *http.Request) {
@@ -599,7 +599,7 @@ func DeleteCommentFuncAPI(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	id := r.URL.Path[len("/api/comment/"):]
+	id := r.URL.Path[len("/comment/"):]
 
 	commentID, err := strconv.Atoi(id)
 
