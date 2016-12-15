@@ -1,4 +1,4 @@
-/* 
+/*
    Author: Suraj Patil http://github.com/thewhitetulip
    License: MIT
 
@@ -96,8 +96,10 @@ var app = new Vue({
     checklogin: function () {
       this.$http.get('/login/').then(response => response.json()).then(result => {
         this.isLoggedIn = result.loggedin;
-        this.FetchCategories();
-        this.FetchTasks();
+	if (this.isLoggedIn) {
+            this.FetchCategories();
+            this.FetchTasks();
+	}
       }).catch(err => {
         console.log(err);
         this.notify("Something went wrong")
@@ -186,9 +188,9 @@ var app = new Vue({
         if (this.categories[c].categoryName == name) {
           switch (action) {
             case "+": 
-                this.categories[c].taskCount += 1;
+                this.categories[c].taskCount += value;
             case "-":
-                this.categories[c].taskCount -= 1;
+                this.categories[c].taskCount -= value;
           }
           break;
         }
@@ -373,6 +375,7 @@ var app = new Vue({
       this.selectedCategoryName = category;
       this.navigation = this.selectedCategoryName;
       this.tasks = [];
+      this.tasks = [];
       this.selectedTaskTypeName = '';
       this.$http.get('/category/' + this.selectedCategoryName).then(response => response.json()).then(result => {
         if (result != null) {
@@ -385,7 +388,9 @@ var app = new Vue({
     },
     showCompletedTasks: function (type) {
       this.$http.get('/completed/').then(response => response.json()).then(result => {
-        Vue.set(this.$data, 'tasks', result);
+        if (result != null) {
+		Vue.set(this.$data, 'tasks', result);
+	}
         this.selectedTaskTypeName = 'completed';
         this.navigation = 'Completed';
         this.selectedCategoryName = '';
@@ -402,7 +407,9 @@ var app = new Vue({
     },
     showDeletedTasks: function (type) {
       this.$http.get('/deleted/').then(response => response.json()).then(result => {
-        Vue.set(this.$data, 'tasks', result)
+        if (result != null) {
+		Vue.set(this.$data, 'tasks', result);
+	}
         this.selectedTaskTypeName = 'deleted';
         this.navigation = 'Deleted';
         this.selectedCategoryName = ''
