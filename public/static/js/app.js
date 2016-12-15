@@ -8,15 +8,40 @@
    You certainly do not need to be a pro in JS, just need to know enough to follow along, but  you do need to read the book
    eventually some day to become comfortable with the concepts in JS, so we recommend strongly to read the book before continuing.
 */
+
+var delimiters = ["${", "}"];
+
+// comment is the component written for the a task comment, yet to include the input tag for adding comment
+Vue.component('comment', {
+	delimiters: delimiters,
+	template:'<div class="comment">\
+	    <p>${comment.content}</p>\
+	    <span class="timestamp">${comment.author} ${comment.created}</span>\
+	    <a v-on:click="deleteComment(taskindex, cindex, taskid, comment.id)">\
+	    <span class="glyphicon glyphicon-trash timestamp"></span></a></div>',
+	props:["comment","cindex", "taskid", "taskindex"],
+	methods:{
+		deleteComment: function (taskIndex, commentIndex, taskID, commentID) {
+		      this.$http.delete('/comment/' + commentID).then(response => response.json())
+			.then(result => {
+			  app.tasks[taskIndex].comments.splice(commentIndex, 1);
+			  app.notify("Comment deleted");
+			}).catch(err => {
+			  console.log(err);
+			  app.notify("Unable to delete comment");
+			});
+		}
+	}
+});
+
 var app = new Vue({
   // The element in the html page where Vue will be anchored
   el: '#tasks',
   // The delimiters used in our app, standard delimiters modified as Go uses {{.
-  delimiters: [
-    '${',
-    '}'
-  ],
+  delimiters: delimiters,
   data: {
+    categories: [],
+    tasks: [],
     navigation: 'Pending', // Displays in the status bar (Completed/Deleted/Pending)
     isLoggedIn: false,
     user: '',
@@ -60,8 +85,6 @@ var app = new Vue({
       categoryName: '',
       taskCount: ''
     },
-    categories: [], // Stores all the categories.
-    tasks: [], // Stores all the tasks.
   },
   // mounted is called the moment the Vue app is added to the html DOM.
   // when the app is mounted, we check if the user is logged in or not
@@ -73,8 +96,8 @@ var app = new Vue({
     // notify toggles the notification and set the content of the 
     // notification with the argument passed in it.
     notify: function (message) {
-      this.notificationVisible = true;
-      this.notification = message;
+	this.notificationVisible = true;
+	this.notification = message;
     },
     signup: function () {
       this.$http.put('/signup/', this.userSignup, {
@@ -304,18 +327,7 @@ var app = new Vue({
     hide: function () {
       this.notificationVisible = false;
     },
-    deleteComment: function (taskIndex, commentIndex, taskID, commentID) {
-      this.$http.delete('/comment/' + commentID).then(response => response.json())
-        .then(result => {
-          this.tasks[taskIndex].comments.splice(commentIndex, 1);
-          this.notify("Comment deleted");
-        }).catch(err => {
-          console.log(err);
-          this.notify("Unable to delete comment");
-        });
-
-    },
-    // edit loads a task to the edit form. User can click on the button to update
+        // edit loads a task to the edit form. User can click on the button to update
     // the task, it calls UpdateTask function.
     edit: function (index) {
       this.isEditing = true;

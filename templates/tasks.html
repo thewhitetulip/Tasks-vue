@@ -34,13 +34,7 @@
                                 ${task.content} 
                                 <template v-if="task.completed">${task.completedmsg}</template>
                                 <div class="commentslist" v-for="(comment, commentIndex) in task.comments">
-                                        <div class="comment">
-                                            <span>${comment.content}</span>
-                                            <span class="timestamp">${comment.author} ${comment.created}</span>
-                                            <a v-on:click="deleteComment(taskIndex, commentIndex, task.id, comment.id)">
-                                                <span class="glyphicon glyphicon-trash timestamp"></span>
-                                            </a>
-                                        </div>
+					<comment :comment="comment" :cindex="commentIndex" :taskid="task.id" :taskindex="taskIndex"></comment>
                                 </div>
                                 <div class="comment">
                                     <form method="POST" v-on:submit.prevent="onSubmit">
