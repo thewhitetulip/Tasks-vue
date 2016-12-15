@@ -36,12 +36,7 @@
                                 <div class="commentslist" v-for="(comment, commentIndex) in task.comments">
 					<comment :comment="comment" :cindex="commentIndex" :taskid="task.id" :taskindex="taskIndex"></comment>
                                 </div>
-                                <div class="comment">
-                                    <form method="POST" v-on:submit.prevent="onSubmit">
-                                        <textarea rows="2" cols="75" name="commentText" placeholder="Add Comment" v-model="comment.content"></textarea>
-                                        <button class="btn btn-primary" v-on:click="addComment(comment, taskIndex)">Add Comment</button>
-                                    </form>
-                                </div>
+				<add-comment :comment="comment" :taskindex="taskIndex"> </add-comment>
                         </span>
                         <span class="notefooter">
                             <ul class="menu">

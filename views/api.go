@@ -561,33 +561,40 @@ func AddCommentFuncAPI(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	text := r.Form.Get("content")
 	taskID := r.Form.Get("taskID")
+	var comment types.Comment
 
 	taskIDInt, err := strconv.Atoi(taskID)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	if err != nil {
 		message = unableToProcess
 		statusCode = http.StatusBadRequest
 		log.Println(err)
-	} else {
-		username := sessions.GetCurrentUserName(r)
-		err = db.AddComments(username, taskIDInt, text)
-		statusCode = http.StatusOK
+		status := types.Status{statusCode, message}
+		w.WriteHeader(statusCode)
+		err = json.NewEncoder(w).Encode(status)
 		if err != nil {
-			log.Println("unable to insert into db")
-			message = unableToProcess
-			statusCode = http.StatusInternalServerError
+			panic(err)
 		}
+
+		return
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	status := types.Status{statusCode, message}
+	username := sessions.GetCurrentUserName(r)
+	comment, err = db.AddComments(username, taskIDInt, text)
+	statusCode = http.StatusOK
+	if err != nil {
+		log.Println("unable to insert into db")
+		message = unableToProcess
+		statusCode = http.StatusInternalServerError
+	}
 	w.WriteHeader(statusCode)
-	err = json.NewEncoder(w).Encode(status)
+	err = json.NewEncoder(w).Encode(comment)
 	if err != nil {
 		panic(err)
 	}
-	return
+
 }
 
 // DeleteCommentFuncAPI handles the DELETE /comment/12 and deletes a comment with ID 12.

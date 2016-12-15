@@ -372,20 +372,42 @@ func GetComments(username string) (map[int][]types.Comment, error) {
 	return commentMap, nil
 }
 
-//AddComments will be used to add comments in the database
-func AddComments(username string, id int, comment string) error {
+// AddComments will be used to add comments in the database and return the added comment's ID and created date
+// along with the error if there is any. It will be sent back to the front end for display.
+func AddComments(username string, id int, content string) (types.Comment, error) {
+	var comment types.Comment
+
 	userID, err := GetUserID(username)
 	if err != nil {
-		return err
+		return comment, err
 	}
 	stmt := "insert into comments(taskID, content, created, user_id) values (?,?,datetime(),?)"
-	err = taskQuery(stmt, id, comment, userID)
+
+	created := time.Now().Local().Format("Jan 2 2006 15:04:05")
+
+	err = taskQuery(stmt, id, content, userID)
 
 	if err != nil {
-		return err
+		return comment, err
 	}
+
+	stmt = "select id, created from comments where taskID=? and content=? and user_id=?"
+	rows := database.query(stmt, id, content, userID)
+
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(&comment.ID, &comment.Created)
+		if err != nil {
+			log.Println("Error ", err)
+		}
+	}
+	comment.Created = created
+
+	comment.Username = username
+	comment.Content = content
 
 	log.Println("added comment to task ID ", id)
 
-	return nil
+	return comment, nil
 }

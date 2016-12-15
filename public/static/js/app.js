@@ -11,6 +11,56 @@
 
 var delimiters = ["${", "}"];
 
+// add-comment is the component for adding a comment.
+Vue.component('add-comment', {
+	props:["taskindex", "comment"],
+	delimiters: delimiters,
+	data: function() {
+		return app.comment
+	},
+	template: '<div class="comment">\
+	    <form method="POST" v-on:submit.prevent="onSubmit">\
+		<textarea rows="2" cols="75" name="commentText" placeholder="Add Comment" v-model="comment.content"></textarea>\
+		<button class="btn btn-primary" v-on:click="addComment(comment, taskindex)">Add Comment</button>\
+	    </form></div>',
+	methods: {
+	    addComment: function (comment, taskIndex) {
+	      app.comment.taskID = app.tasks[taskIndex].id;
+	      console.log(app.tasks[taskIndex].title, app.tasks[taskIndex].id);
+
+	      if (app.comment.content == '') {
+		app.notify("Comment can't be empty");
+		return;
+	      }
+
+	      this.$http.put('/comment/', app.comment, {
+		emulateJSON: true
+	      }).then(response => response.json()).then(result => {
+		app.comment.author = result.author;
+		app.comment.created = result.created;
+
+		if (app.tasks[taskIndex].comments == null) {
+		  app.tasks[taskIndex].comments = [];
+		}
+
+		app.tasks[taskIndex].comments.push(comment);
+		app.comment = {
+		  content: '',
+		  created: '',
+		  taskID: '',
+		  author: ''
+		}
+
+		app.notify("Comment added")
+
+	      }).catch(err => {
+		console.log(err);
+		this.notify("Unable to add comment");
+	      });
+	    }
+	}
+});
+
 // comment is the component written for the a task comment, yet to include the input tag for adding comment
 Vue.component('comment', {
 	delimiters: delimiters,
@@ -289,41 +339,7 @@ var app = new Vue({
           this.notify("Unable to delete category");
         });
     },
-    addComment: function (comment, taskIndex) {
-      this.comment.taskID = this.tasks[taskIndex].id;
-      console.log(this.tasks[taskIndex].title, this.tasks[taskIndex].id);
-
-      if (this.comment.content == '') {
-        this.notify("Comment can't be empty");
-        return;
-      }
-
-      this.$http.put('/comment/', this.comment, {
-        emulateJSON: true
-      }).then(response => response.json()).then(result => {
-        this.comment.author = this.user;
-        this.comment.created = new Date();
-
-        if (this.tasks[taskIndex].comments == null) {
-          this.tasks[taskIndex].comments = [];
-        }
-
-        this.tasks[taskIndex].comments.push(comment);
-        this.comment = {
-          content: '',
-          created: '',
-          taskID: '',
-          author: ''
-        }
-
-        this.notify("Comment added")
-
-      }).catch(err => {
-        console.log(err);
-        this.notify("Unable to add comment");
-      });
-    },
-    // hides the visibility of the notification
+   // hides the visibility of the notification
     hide: function () {
       this.notificationVisible = false;
     },
