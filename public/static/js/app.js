@@ -65,7 +65,7 @@ Vue.component('add-comment', {
 Vue.component('comment', {
 	delimiters: delimiters,
 	template:'<div class="comment">\
-	    <p>${comment.content}</p>\
+	    <p><span v-html="comment.html_content"> </span></p>\
 	    <span class="timestamp">${comment.author} ${comment.created}</span>\
 	    <a v-on:click="deleteComment(taskindex, cindex, taskid, comment.id)">\
 	    <span class="glyphicon glyphicon-trash timestamp"></span></a></div>',

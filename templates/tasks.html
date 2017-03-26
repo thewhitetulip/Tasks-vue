@@ -31,7 +31,7 @@
                         <p class="noteHeading ">${task.title}</p> 
                         <span class="toggle glyphicon glyphicon-resize-full" v-on:click="toggleContent(task)"></span>
                         <span class="noteContent" v-show="task.showComment">
-                                ${task.content} 
+                                <span v-html="task.html_content"> </span>
                                 <template v-if="task.completed">${task.completedmsg}</template>
                                 <div class="commentslist" v-for="(comment, commentIndex) in task.comments">
 					<comment :comment="comment" :cindex="commentIndex" :taskid="task.id" :taskindex="taskIndex"></comment>
